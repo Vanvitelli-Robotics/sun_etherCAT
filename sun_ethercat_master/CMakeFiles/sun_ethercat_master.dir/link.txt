@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsun_ethercat_master.a  CMakeFiles/sun_ethercat_master.dir/src/Master.cpp.o
+/usr/bin/ranlib libsun_ethercat_master.a

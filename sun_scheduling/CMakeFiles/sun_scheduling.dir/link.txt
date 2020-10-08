@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsun_scheduling.a  CMakeFiles/sun_scheduling.dir/src/scheduling.c.o
+/usr/bin/ranlib libsun_scheduling.a

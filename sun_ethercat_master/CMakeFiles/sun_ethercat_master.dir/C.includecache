@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/asusrobot/Documents/Federico-De_Simone/sun_ethercat_master/src/scheduling.c
+linux/kernel.h
+-
+unistd.h
+-
+sys/syscall.h
+-
+stdlib.h
+-
+stdio.h
+-
+sched.h
+-
+errno.h
+-
+scheduling.h
+/home/asusrobot/Documents/Federico-De_Simone/sun_ethercat_master/src/scheduling.h
+
+sun_ethercat_master/include/scheduling.h
+linux/types.h
+-
+sys/syscall.h
+-
+linux/sched.h
+-
+sys/types.h
+-
+

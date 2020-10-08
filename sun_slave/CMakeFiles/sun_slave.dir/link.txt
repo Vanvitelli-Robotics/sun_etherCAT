@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsun_slave.a  CMakeFiles/sun_slave.dir/src/ATINano43.cpp.o CMakeFiles/sun_slave.dir/src/Meca500.cpp.o
+/usr/bin/ranlib libsun_slave.a
