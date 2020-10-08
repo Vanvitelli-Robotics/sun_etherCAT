@@ -46,6 +46,8 @@ namespace sun
         std::thread thread_master;
 
     public:
+        void deactivate();
+
         /**
          * Constructor of Master
          * @param char* ifname this is the port for ethercat comunication

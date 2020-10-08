@@ -6,6 +6,10 @@
 #include <stdexcept>
 #include <cstring>
 
+#define SET_BIT(prev, bit) (prev | (0x0ff & bit))
+#define CLEAR_BIT(prev, bit) (prev & (0x0ff & (~bit)))
+#define GET_BIT(mask, value) (mask & value)
+
 #define NSEC_PER_SEC 1000000000 //nanosecondi ogni secondo
 
 //struct of Object Dictionary's entry
@@ -37,7 +41,7 @@ namespace sun
         //initialize SOEM and match to ifname
         if (ec_init(ifname))
         {
-            std::cout << "ec_init on " << ifname << "succeeded.\n";
+            std::cout << "ec_init on " << ifname << " succeeded.\n";
         }
 
         else
@@ -196,9 +200,9 @@ namespace sun
             pthread_cancel(pthread_self());
         }
 
-        mtx.lock();
-        ec_send_processdata();
-        mtx.unlock();
+        // mtx.lock();
+        // ec_send_processdata();
+        // mtx.unlock();
 
         //for (int i = 0; i < 5000; i++)
         while (shutdown)
@@ -206,15 +210,28 @@ namespace sun
             time1 = ec_DCtime;
             this->add_timespec(&ts, cycletime + toff);
             clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, &tleft);
-            mtx.lock();
-            wkc = ec_receive_processdata(EC_TIMEOUTRET);
-            mtx.unlock();
-            this->ec_sync(ec_DCtime, cycletime, &toff);
+
             mtx.lock();
             ec_send_processdata();
+            wkc = ec_receive_processdata(EC_TIMEOUTRET);
             mtx.unlock();
+
+            this->ec_sync(ec_DCtime, cycletime, &toff);
             time2 = ec_DCtime;
             cycle = time2 - time1;
+
+            // time1 = ec_DCtime;
+            // this->add_timespec(&ts, cycletime + toff);
+            // clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, &tleft);
+            // mtx.lock();
+            // wkc = ec_receive_processdata(EC_TIMEOUTRET);
+            // mtx.unlock();
+            // this->ec_sync(ec_DCtime, cycletime, &toff);
+            // mtx.lock();
+            // ec_send_processdata();
+            // mtx.unlock();
+            // time2 = ec_DCtime;
+            // cycle = time2 - time1;
         }
     }
 
@@ -222,10 +239,9 @@ namespace sun
     {
         if (!thread)
         {
-            std::cout<<"Create_thread1\n";
             //create real-time thread to exchange data
             setCycle(cycleTime);
-            shutdown=true;
+            shutdown = true;
             thread_master = std::thread(&Master::ecatthread, this);
             thread = true;
         }
@@ -240,8 +256,8 @@ namespace sun
 
     void Master::close_master()
     {
-        movetoState_broadcast(EC_STATE_SAFE_OP, 200000);
-        movetoState_broadcast(EC_STATE_PRE_OP, 9000000);
+        //movetoState_broadcast(EC_STATE_SAFE_OP, 200000);
+        //movetoState_broadcast(EC_STATE_PRE_OP, 9000000);
         shutdown = false;
         thread = false;
         ec_close();
@@ -285,6 +301,19 @@ namespace sun
             fflush(stdout);
             osal_usleep(1000);
         }
+    }
+
+    void Master::deactivate()
+    {
+        printf("Before: %c\n", IOmap[0]);
+        IOmap[0] = CLEAR_BIT(0x02, 0x02);
+        usleep(1000);
+        IOmap[0] = CLEAR_BIT(0x04, 0x04);
+        usleep(1000);
+        IOmap[0] = SET_BIT(0x00, 0x01);
+        printf("After1: %c\n", IOmap[0]);
+        usleep(1000);
+        printf("After2: %c\n", IOmap[0]);
     }
 
     uint8 *Master::getOutput_slave(uint16 position)

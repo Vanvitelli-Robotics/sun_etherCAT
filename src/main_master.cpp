@@ -18,58 +18,8 @@ int main(int argc, char *argv[])
     {
         char *ifname = argv[1];
         uint16 state_check;
-        Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
-        ATINano43 forceSensor(1, &master, 1000000);
-        master.config_ec_sync0(1, TRUE, 1000000, 500000);
 
-        master.configDC();
-        master.configMap();
-
-        master.movetoState(forceSensor.getPosition(), EC_STATE_SAFE_OP, EC_TIMEOUT_TO_SAFE_OP);
-        master.createThread(1000000);
-
-        master.movetoState(forceSensor.getPosition(), EC_STATE_OPERATIONAL, EC_TIMEOUT_TO_SAFE_OP);
-
-        forceSensor.assign_pointer_struct();
-        forceSensor.start_realtime();
-        double array_forces[3];
-        double array_torques[3];
-        uint32 array_status[3];
-        int y = 0;
-        sleep(1);
-        int prova = 0;
-        while (y < 5000)
-        {
-            auto start = std::chrono::system_clock::now();
-            forceSensor.getForces(array_forces);
-            printf("Value: \n");
-            for (int i = 0; i < 3; i++)
-            {
-                printf("F_%d: %f", i, array_forces[i]);
-                printf("\n");
-            }
-
-            printf("\n");
-            forceSensor.getTorques(array_torques);
-            for (int i = 0; i < 3; i++)
-            {
-                printf("T_%d: %f", i, array_torques[i]);
-                printf("\n");
-            }
-            forceSensor.getStatus(array_status);
-            auto end = std::chrono::system_clock::now();
-            std::cout <<"Time diff: " <<std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()<< "us.\n";
-            printf("\n");
-            printf("\n");
-            y++;
-            osal_usleep(1000);
-        }
-        forceSensor.stop();
-        master.close_master();
-
-        master.waitThread();
-
-        /*try
+        try
         {
             Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
             Meca500 meca500(&master, 1);
@@ -89,10 +39,112 @@ int main(int argc, char *argv[])
                 try
                 {
                     master.movetoState(meca500.getPosition(), EC_STATE_OPERATIONAL, EC_TIMEOUT_TO_SAFE_OP);
-                    meca500.activate();
-                    //meca500.prove();
+                    try
+                    {
+                        bool as;
+                        bool hs;
+                        bool sm;
+                        bool es;
+                        bool pm;
+                        bool eob;
+                        bool eom;
+                        float joint_angles[6];
+                        int8 c[3];
+                        float pose[6];
+                        float joints[6] = {0, 0, 0, 0, 0, 0};
+
+                        sleep(5);
+
+                        meca500.getStatusRobot(as, hs, sm, es, pm, eob, eom);
+                        printf("\nActivate: %d\n", as);
+                        printf("Homed: %d\n", hs);
+                        printf("Sim: %d\n", sm);
+                        printf("Error: %d\n", es);
+
+                        //meca500.resetError();
+                        meca500.activateRobot();
+
+                        sleep(2);
+
+                        meca500.home();
+
+                        sleep(2);
+
+                        meca500.getJoints(joint_angles);
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            std::cout << "Joint_" << i + 1 << ": " << joint_angles[i] << "\n";
+                        }
+                        printf("\n\n");
+
+                        sleep(2);
+
+                        meca500.getConf(c);
+
+                        for (int i = 0; i < 3; i++)
+                        {
+                            printf("c_%d: %hhd\n", i + 1, c[i]);
+                        }
+                        printf("\n\n");
+
+                        sleep(2);
+
+                        meca500.getPose(pose);
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            std::cout << "pose_" << i + 1 << ": " << pose[i] << "\n";
+                        }
+                        printf("\n\n");
+
+                        sleep(2);
+
+                        meca500.moveJoints(joints);
+                        meca500.moveJoints(joints);
+                        meca500.moveJoints(joints);
+                        meca500.moveJoints(joints);
+
+                        sleep(2);
+
+                        meca500.moveJoints(joints);
+
+                        sleep(2);
+                        meca500.getJoints(joint_angles);
+
+                        for (int i = 0; i < 6; i++)
+                        {
+                            std::cout << "Joint_" << i + 1 << ": " << joint_angles[i] << "\n";
+                        }
+                        printf("\n\n");
+
+                        sleep(2);
+
+                        meca500.deactivateRobot();
+
+                        sleep(2);
+
+                        meca500.getStatusRobot(as, hs, sm, es, pm, eob, eom);
+                        printf("\nActivate: %d\n", as);
+                        printf("Homed: %d\n", hs);
+                        printf("Sim: %d\n", sm);
+                        printf("Error: %d\n", es);
+                    }
+                    catch (const std::runtime_error &e)
+                    {
+                        cerr << e.what();
+                    }
+
                     //master.stampa();
-                    //master.close_master();
+                    usleep(5000000);
+                    try
+                    {
+                        master.close_master();
+                    }
+                    catch (const std::runtime_error &e)
+                    {
+                        std::cout << "Error close_master\n";
+                    }
                     master.waitThread();
                 }
                 catch (const std::runtime_error &e)
@@ -111,6 +163,6 @@ int main(int argc, char *argv[])
         {
             cerr << e.what();
             return -1;
-        }*/
+        }
     }
 }

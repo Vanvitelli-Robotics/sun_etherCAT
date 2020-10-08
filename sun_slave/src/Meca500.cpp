@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#define TIMEOUT_RQ 1000000
+#define TIMEOUT_RQ 100000
 
 #define SET_BIT(prev, bit) (prev | (0x0ff & bit))
 #define CLEAR_BIT(prev, bit) (prev & (0x0ff & (~bit)))
@@ -150,37 +150,44 @@ namespace sun
     *                               Request commands
     */
 
-    //PROBLEMA: COME GESTIAMO I SEMAFORI E LE REGIONI CRITICHE??????
-
     void Meca500::activateRobot()
     {
-        if (GET_BIT(0x02, out_MECA500->status_bits == 1))
+        int time = 0;
+        master->mutex_down();
+        if (GET_BIT(0x02, out_MECA500->status_bits == 2))
         {
+            master->mutex_up();
             std::cout << "Motors already activated.\n";
         }
         else
         {
-            int time = 0;
-            uint32 activate = 2;
-            std::cout << "BIT: " << GET_BIT(0xff, 0x02) << "\n";
-            std::cout << sizeof(GET_BIT(0xff, 0x02)) << "\n";
-            in_MECA500->robot_control_data = 0x00000002;
-            std::cout << "Lettura_struct_activate: " << in_MECA500->robot_control_data << "\n";
-            printf("Valore letto_activate_printf: %d\n", GET_BIT(0xff, out_MECA500->status_bits));
-            printf("Valore letto_error_printf: %d\n", out_MECA500->error);
+            time = 0;
+            in_MECA500->robot_control_data = SET_BIT(in_MECA500->robot_control_data, 0x02);
 
-            while (GET_BIT(0x02, out_MECA500->status_bits) != 1 && time <= TIMEOUT_RQ)
+            while (GET_BIT(0x02, out_MECA500->status_bits) != 2 && time < TIMEOUT_RQ)
             {
-                usleep(1000);
+                master->mutex_up();
+                usleep(10);
                 time++;
+                master->mutex_down();
             }
+            master->mutex_up();
+
             if (time == TIMEOUT_RQ)
             {
                 std::cout << "Timeout exceeded!\n";
+            }
+            master->mutex_down();
+            if (GET_BIT(0x02, out_MECA500->status_bits) != 2)
+            {
+                master->mutex_up();
                 getError();
             }
             else
+            {
                 std::cout << "Motors activated.\n";
+                master->mutex_up();
+            }
         }
     }
 
@@ -210,6 +217,7 @@ namespace sun
         in_MECA500->robot_control_data = CLEAR_BIT(in_MECA500->robot_control_data, 0x05);
         while (GET_BIT(0x04, out_MECA500->status_bits) != 0 && time <= TIMEOUT_RQ)
         {
+
             usleep(1000);
             time++;
         }
@@ -225,13 +233,23 @@ namespace sun
     void Meca500::deactivateRobot()
     {
         int time = 0;
-        in_MECA500->robot_control_data = CLEAR_BIT(in_MECA500->robot_control_data, 0x06);
+
+        master->mutex_down();
+        //set activate_in to 0
+        in_MECA500->robot_control_data = CLEAR_BIT(in_MECA500->robot_control_data, 0x02);
+        //set home_in to 0
+        in_MECA500->robot_control_data = CLEAR_BIT(in_MECA500->robot_control_data, 0x04);
+        //set deactivate to 1
         in_MECA500->robot_control_data = SET_BIT(in_MECA500->robot_control_data, 0x01);
-        while (GET_BIT(0x01, out_MECA500->status_bits) != 0 && time <= TIMEOUT_RQ)
+
+        while (GET_BIT(out_MECA500->status_bits, 0x02) == 2 && time < TIMEOUT_RQ)
         {
-            usleep(1000);
+            master->mutex_up();
+            usleep(10);
             time++;
+            master->mutex_down();
         }
+        master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
             std::cout << "Timeout exceeded!\n";
@@ -245,20 +263,27 @@ namespace sun
     {
         int time = 0;
         //Verify homing already done
-        if (GET_BIT(0x04, out_MECA500->status_bits) == 1)
+        master->mutex_down();
+        if (GET_BIT(0x04, out_MECA500->status_bits) == 4)
+        {
+            master->mutex_up();
             std::cout << "Homing already done.\n";
+        }
         else
         {
             //Verify if the robot is activated
-            if (GET_BIT(0x02, out_MECA500->status_bits == 1))
+            if (GET_BIT(0x02, out_MECA500->status_bits) == 2)
             {
                 //enable homing
                 in_MECA500->robot_control_data = SET_BIT(in_MECA500->robot_control_data, 0x04);
-                while (GET_BIT(0x04, out_MECA500->status_bits) != 0 && time <= TIMEOUT_RQ)
+                while (GET_BIT(0x04, out_MECA500->status_bits) != 4 && time < TIMEOUT_RQ)
                 {
-                    usleep(1000);
+                    master->mutex_up();
+                    usleep(10);
                     time++;
+                    master->mutex_down();
                 }
+                master->mutex_up();
                 if (time == TIMEOUT_RQ)
                 {
                     std::cout << "Timeout exceeded!\n";
@@ -276,12 +301,29 @@ namespace sun
 
     void Meca500::resetError()
     {
-        if (out_MECA500->error = 0)
+        int time = 0;
+        master->mutex_down();
+        if (out_MECA500->error == 0)
+        {
+            master->mutex_up();
             std::cout << "There was no error to reset.\n";
+        }
         else
         {
-            out_MECA500->error = 0;
-            std::cout << "The error was reset.\n";
+            in_MECA500->robot_control_data = SET_BIT(in_MECA500->robot_control_data, 0x08);
+            while (out_MECA500->error != 0 && time < TIMEOUT_RQ)
+            {
+                master->mutex_up();
+                time++;
+                master->mutex_down();
+                std::cout << "Error: " << out_MECA500->error << "\n";
+            }
+            master->mutex_up();
+            std::cout << "Time: " << time << "\n";
+            if (time == TIMEOUT_RQ)
+                std::cout << "Timeout exceeded!\n";
+            else
+                std::cout << "The error was reset.\n";
         }
     }
 
@@ -304,49 +346,56 @@ namespace sun
 
     void Meca500::getConf(int8 *array_c)
     {
+        master->mutex_down();
         array_c[0] = out_MECA500->configuration.c1;
         array_c[1] = out_MECA500->configuration.c3;
         array_c[2] = out_MECA500->configuration.c5;
+        master->mutex_up();
     }
 
     void Meca500::getJoints(float *joint_angles)
     {
+        master->mutex_down();
         joint_angles[0] = out_MECA500->angular_position.joint_angle_1;
         joint_angles[1] = out_MECA500->angular_position.joint_angle_2;
         joint_angles[2] = out_MECA500->angular_position.joint_angle_3;
         joint_angles[3] = out_MECA500->angular_position.joint_angle_4;
         joint_angles[4] = out_MECA500->angular_position.joint_angle_5;
         joint_angles[5] = out_MECA500->angular_position.joint_angle_6;
+        master->mutex_up();
     }
 
     void Meca500::getPose(float *pose)
     {
+        master->mutex_down();
         pose[0] = out_MECA500->cartesian_position.x;
         pose[1] = out_MECA500->cartesian_position.y;
         pose[2] = out_MECA500->cartesian_position.z;
         pose[3] = out_MECA500->cartesian_position.alpha;
         pose[4] = out_MECA500->cartesian_position.beta;
         pose[5] = out_MECA500->cartesian_position.gamma;
+        master->mutex_up();
     }
 
     void Meca500::getStatusRobot(bool &as, bool &hs, bool &sm, bool &es, bool &pm, bool &eob, bool &eom)
     {
-        if (GET_BIT(0x02, out_MECA500->status_bits) == 1)
+        master->mutex_down();
+        if (GET_BIT(0x02, out_MECA500->status_bits) == 2)
             as = true;
         else
             as = false;
 
-        if (GET_BIT(0x04, out_MECA500->status_bits) == 1)
+        if (GET_BIT(0x04, out_MECA500->status_bits) == 4)
             hs = true;
         else
             hs = false;
 
-        if (GET_BIT(0x08, out_MECA500->status_bits) == 1)
+        if (GET_BIT(0x08, out_MECA500->status_bits) == 8)
             sm = true;
         else
             sm = false;
 
-        if (out_MECA500->error == 1)
+        if (out_MECA500->error != 0)
             es = true;
         else
             es = false;
@@ -356,15 +405,16 @@ namespace sun
         else
             pm = false;
 
-        if (GET_BIT(0x02, out_MECA500->motion_status.motion_bits) == 1)
+        if (GET_BIT(0x02, out_MECA500->motion_status.motion_bits) == 2)
             eob = true;
         else
             eob = false;
 
-        if (GET_BIT(0x04, out_MECA500->motion_status.motion_bits) == 1)
+        if (GET_BIT(0x04, out_MECA500->motion_status.motion_bits) == 4)
             eom = true;
         else
             eom = false;
+        master->mutex_up();
     }
 
     void Meca500::pauseMotion()
@@ -427,8 +477,7 @@ namespace sun
 
     void Meca500::moveJoints(float *theta)
     {
-        //VA FATTO UN CONTROLLO SUI VALORI PASSATI?????
-        //AD ESEMPIO,
+        master->mutex_down();
         in_MECA500->movement.motion_command = 1;
         in_MECA500->movement.variables.varf[0] = theta[0];
         in_MECA500->movement.variables.varf[0] = theta[1];
@@ -436,6 +485,13 @@ namespace sun
         in_MECA500->movement.variables.varf[2] = theta[3];
         in_MECA500->movement.variables.varf[3] = theta[4];
         in_MECA500->movement.variables.varf[4] = theta[5];
+        master->mutex_up();
+        for (int i = 0; i < 4; i++)
+        {
+            printf("Motion_command_in: %hd\n", in_MECA500->movement.motion_command);
+            printf("Motion_command_out: %hd\n", out_MECA500->motion_status.move_id);
+            sleep(1);
+        }
     }
 
     void Meca500::movePose(float *pose)
@@ -575,8 +631,9 @@ namespace sun
 
     void Meca500::setConf(float *c)
     {
+        int i = 0;
         in_MECA500->movement.motion_command = 15;
-        for (int i = 0; i < 3; i++)
+        for (i = 0; i < 3; i++)
         {
             if (c[i] == 1 || c[i] == -1)
                 in_MECA500->movement.variables.varf[i] = c[i];
@@ -598,8 +655,6 @@ namespace sun
             std::cout << "Error values of parameter e! They must be 1 or -1.\n";
     }
 
-    
-
     void Meca500::prove()
     {
         uint32 activate = 2;
@@ -611,10 +666,11 @@ namespace sun
     {
         //receive_data(&(out_MECA500.robot_status), offsetof(out_MECA500t, robot_status));
         //int status_error;
+        master->mutex_down();
         switch (out_MECA500->error)
         {
         case (0):
-            std::cout << "Operation succeded\n";
+            std::cout << "Operation succeeded.\n";
             break;
         case (1013):
             throw std::runtime_error("1013: Activation failed. Try again\n");
@@ -623,6 +679,7 @@ namespace sun
             throw std::runtime_error("Homing procedure failed.Try again.\n");
             break;
         }
+        master->mutex_up();
     }
 
 } // namespace sun
