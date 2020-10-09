@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
         try
         {
             Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
-            Meca500 meca500(&master, 1);
+            Meca500 meca500(&master, 2);
 
             master.setupSlave(meca500.getPosition(), Meca500::setup_static);
 
@@ -52,6 +52,8 @@ int main(int argc, char *argv[])
                         int8 c[3];
                         float pose[6];
                         float joints[6] = {0, 0, 0, 0, 0, 0};
+                        float joints2[6] = {0, 0, 0, 0, 90, 0};
+                        float joints3[6] = {0, 0, 0, 0, -90, 0};
 
                         sleep(5);
 
@@ -99,17 +101,30 @@ int main(int argc, char *argv[])
                         printf("\n\n");
 
                         sleep(2);
+                        meca500.setPoint(1);
 
-                        meca500.moveJoints(joints);
-                        meca500.moveJoints(joints);
-                        meca500.moveJoints(joints);
-                        meca500.moveJoints(joints);
+                        sleep(2);
+
+                        meca500.moveJoints(joints2);
 
                         sleep(2);
 
                         meca500.moveJoints(joints);
 
                         sleep(2);
+
+                        meca500.moveJoints(joints3);
+
+                        sleep(2);
+                        meca500.moveJoints(joints);
+
+                        sleep(2);
+                        meca500.setPoint(0);
+
+                        //meca500.resetMotion();
+
+                        sleep(2);
+
                         meca500.getJoints(joint_angles);
 
                         for (int i = 0; i < 6; i++)
@@ -135,11 +150,11 @@ int main(int argc, char *argv[])
                         cerr << e.what();
                     }
 
-                    //master.stampa();
                     usleep(5000000);
                     try
                     {
                         master.close_master();
+                        //master.stampa();
                     }
                     catch (const std::runtime_error &e)
                     {

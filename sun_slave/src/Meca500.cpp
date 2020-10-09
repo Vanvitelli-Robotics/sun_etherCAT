@@ -123,7 +123,7 @@ namespace sun
         retval = ec_SDOwrite(slave, RXPDO_number.index, RXPDO_number.sub_index,
                              FALSE, RXPDO_number.size, &(RXPDO_number.value), EC_TIMEOUTSAFE);
         printf("esito_numero=%d\n", retval);
-        ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
+        //ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
 
         return 0;
     }
@@ -474,24 +474,63 @@ namespace sun
     //PER TUTTI I COMANDI CHE SEGUONO VA VERIFICATA SE LA DIMENSIONE DEL VETTORE
     //DI INGRESSO E' QUELLA GIUSTA!!!!
     //DA IMPLEMENTARE
-
-    void Meca500::moveJoints(float *theta)
+    int Meca500::setPoint(int x)
     {
+        if (x == 1)
+        {
+            master->mutex_down();
+            in_MECA500->motion_control.motion_control_data = SET_BIT(in_MECA500->motion_control.motion_control_data, 0x01);
+            master->mutex_up();
+        }
+        if (x == 0)
+        {
+            master->mutex_down();
+            in_MECA500->motion_control.motion_control_data = CLEAR_BIT(in_MECA500->motion_control.motion_control_data, 0x01);
+            master->mutex_up();
+        }
+        else
+        {
+            return -1;
+        }
+        return 0;
+    }
+
+    void Meca500::setMoveID(uint16 moveID)
+    {
+        master->mutex_down();
+        in_MECA500->motion_control.moveID = moveID;
+        master->mutex_up();
+    }
+
+    void Meca500::resetMotion()
+    {
+        master->mutex_down();
+        in_MECA500->movement.motion_command = 0;
+        in_MECA500->movement.variables.varf[0] = 0;
+        in_MECA500->movement.variables.varf[1] = 0;
+        in_MECA500->movement.variables.varf[2] = 0;
+        in_MECA500->movement.variables.varf[3] = 0;
+        in_MECA500->movement.variables.varf[4] = 0;
+        in_MECA500->movement.variables.varf[5] = 0;
+        master->mutex_up();
+    }
+
+    void Meca500::moveJoints(float *theta, uint16 moveID)
+    {
+        //setPoint(1);
+        setMoveID(moveID);
+
         master->mutex_down();
         in_MECA500->movement.motion_command = 1;
         in_MECA500->movement.variables.varf[0] = theta[0];
-        in_MECA500->movement.variables.varf[0] = theta[1];
-        in_MECA500->movement.variables.varf[1] = theta[2];
-        in_MECA500->movement.variables.varf[2] = theta[3];
-        in_MECA500->movement.variables.varf[3] = theta[4];
-        in_MECA500->movement.variables.varf[4] = theta[5];
+        in_MECA500->movement.variables.varf[1] = theta[1];
+        in_MECA500->movement.variables.varf[2] = theta[2];
+        in_MECA500->movement.variables.varf[3] = theta[3];
+        in_MECA500->movement.variables.varf[4] = theta[4];
+        in_MECA500->movement.variables.varf[5] = theta[5];
         master->mutex_up();
-        for (int i = 0; i < 4; i++)
-        {
-            printf("Motion_command_in: %hd\n", in_MECA500->movement.motion_command);
-            printf("Motion_command_out: %hd\n", out_MECA500->motion_status.move_id);
-            sleep(1);
-        }
+
+        //setPoint(0);
     }
 
     void Meca500::movePose(float *pose)

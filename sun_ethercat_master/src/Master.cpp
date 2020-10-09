@@ -200,11 +200,8 @@ namespace sun
             pthread_cancel(pthread_self());
         }
 
-        // mtx.lock();
-        // ec_send_processdata();
-        // mtx.unlock();
-
         //for (int i = 0; i < 5000; i++)
+        int i = 0;
         while (shutdown)
         {
             time1 = ec_DCtime;
@@ -219,19 +216,8 @@ namespace sun
             this->ec_sync(ec_DCtime, cycletime, &toff);
             time2 = ec_DCtime;
             cycle = time2 - time1;
-
-            // time1 = ec_DCtime;
-            // this->add_timespec(&ts, cycletime + toff);
-            // clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, &tleft);
-            // mtx.lock();
-            // wkc = ec_receive_processdata(EC_TIMEOUTRET);
-            // mtx.unlock();
-            // this->ec_sync(ec_DCtime, cycletime, &toff);
-            // mtx.lock();
-            // ec_send_processdata();
-            // mtx.unlock();
-            // time2 = ec_DCtime;
-            // cycle = time2 - time1;
+            if (i < 50000)
+                timecycle[i++] = cycle;
         }
     }
 
@@ -294,10 +280,16 @@ namespace sun
 
     void Master::stampa()
     {
-        for (int i = 0; i < 5000; i++)
+        // for (int i = 0; i < 5000; i++)
+        // {
+        //     printf("PDO: i=%d, calc_cycle=%ld[ns],cycle_read=%ld[ns] \n",
+        //            i, cycle, ec_slave[1].DCcycle);
+        //     fflush(stdout);
+        //     osal_usleep(1000);
+        // }
+         for (int i = 0; i < 50000; i++)
         {
-            printf("PDO: i=%d, calc_cycle=%ld[ns],cycle_read=%ld[ns] \n",
-                   i, cycle, ec_slave[1].DCcycle);
+            printf("Cycle_time_%d: %d \n", i+1, timecycle[i]);
             fflush(stdout);
             osal_usleep(1000);
         }

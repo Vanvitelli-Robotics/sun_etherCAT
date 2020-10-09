@@ -36,6 +36,7 @@ namespace sun
         //int64 gldelta;
         long int time1;
         long int time2;
+        std::array<long int,50000> timecycle;
         long int cycle;
         volatile int wkc;
         int64 cycletime;

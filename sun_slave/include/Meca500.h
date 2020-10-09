@@ -126,7 +126,9 @@ namespace sun
 
         typedef struct PACKED
         {
-            uint32 motion_control_data;
+            uint16 moveID;
+            uint16 motion_control_data;
+
         } motion_control_t;
 
         /**struct of inputs of MECA500 (Rx PDO)*/
@@ -327,13 +329,21 @@ namespace sun
          *
          *                      Motion commands
          *
-        *
+        */
 
+        /**
+        * @param int t it is the desired pause length in seconds.
+        */
+        int setPoint(int x);
+
+        void setMoveID(uint16 moveID);
+        void resetMotion();
         /**
         * This command is used to add a time delay after a motion command. 
         * The robot completes all movements sent before the Delay command and stops temporarily.
         * @param int t it is the desired pause length in seconds.
         */
+
         void delay(int t);
 
         /**
@@ -341,7 +351,7 @@ namespace sun
         * All joint rotations start and stop simultaneously.
         * @param float theta_i the angle of joint i (i=1,...,6) in degrees
         */
-        void moveJoints(float *theta);
+        void moveJoints(float *theta, uint16 moveID = 0);
 
         /**
         * This command makes the robot move its TRF to a specific pose with respect to the WRF
@@ -410,7 +420,7 @@ namespace sun
          @param float c[1]=c3: second inverse kinematics configuration parameter, either −1 or 1
          @param float c[2]=c5: third inverse kinematics configuration parameter, either −1 or 1
         */
-        void setConf(float* c);
+        void setConf(float *c);
 
         /**
         * This command limits the acceleration of the joints. Note that this command makes the robot stop, even if blending is enabled.
@@ -430,7 +440,7 @@ namespace sun
         *@param float pose[0], pose[1], pose[2] are respectively x , y , and z: the coordinates of the origin of the TRF w.r.t. the FRF, in mm
         *@param float pose[3], pose[4], pose[5] are respectively α , β , and γ: the Euler angles representing the orientation of the TRF w.r.t. the FRF, in degrees.By default, the TRF coincides with the FRF.
         */
-        void setTRF(float* pose);
+        void setTRF(float *pose);
 
         /**
         *This command defines the pose of the WRF with respect to the BRF. Note that this com-
@@ -439,7 +449,7 @@ namespace sun
         *@param float  pose[0], pose[1], pose[2] are respectively x , y , and z : the coordinates of the origin of the WRF w.r.t. the BRF, in mm
         *@param float  pose[3], pose[4], pose[5] are respectively α , β , and γ : the Euler angles representing the orientation of the WRF w.r.t. the BRF,in degrees.
         */
-        void setWRF(float* pose);
+        void setWRF(float *pose);
 
         /**
         *This command sets the timeout after a velocity-mode motion command (MoveJointsVel,
