@@ -15,17 +15,27 @@ namespace sun
 
         void ATINano43::start_realtime()
         {
+            master->mutex_down();
             RDTRequest->command = START_REALTIME;
             int wait = 0;
             while (RDTRecord->status != STATUS_OK && wait < (TIMEOUT / SLEEP_TIME))
             {
+                master->mutex_up();
                 wait++;
                 osal_usleep(SLEEP_TIME);
+                master->mutex_down();
             }
             if (RDTRecord->status == STATUS_OK)
+            {
+                master->mutex_up();
                 std::cout << "Starting streaming real-time...\n";
+            }
+
             else
+            {
+                master->mutex_up();
                 throw std::runtime_error("Error start real-time streamig\nTIMEOUT expired!\n");
+            }
         }
 
         void ATINano43::start_buffered()
@@ -45,17 +55,26 @@ namespace sun
 
         void ATINano43::stop()
         {
+            master->mutex_down();
             RDTRequest->command = STOP_STREAMING;
             int wait = 0;
             while (RDTRecord->status != STATUS_OK && wait < (TIMEOUT / SLEEP_TIME))
             {
+                master->mutex_up();
                 wait++;
                 osal_usleep(SLEEP_TIME);
+                master->mutex_down();
             }
             if (RDTRecord->status == STATUS_OK)
+            {
+                master->mutex_up();
                 std::cout << "Stopping streaming...\n";
+            }
             else
+            {
+                master->mutex_up();
                 throw std::runtime_error("Error stop streamig\nTIMEOUT expired!\n");
+            }
         }
 
         void ATINano43::getForces(double *forces)

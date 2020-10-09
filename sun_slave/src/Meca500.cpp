@@ -14,7 +14,7 @@ namespace sun
 {
     std::vector<Meca500 *> Meca500::meca_vector;
 
-    Meca500::Meca500(Master *m, uint16 p, int64 cycletime)
+    Meca500::Meca500(uint16 p, Master *m, int64 cycletime)
     {
         master = m;
         position = p;

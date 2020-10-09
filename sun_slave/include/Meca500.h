@@ -158,7 +158,7 @@ namespace sun
          * @param uint16 position this is the position of the slave in the network
          * @param int64 cycletime this is the specific time of cycle of each slave. It's set to 1000000 as default value. 
         */
-        Meca500(Master *m, uint16 position, int64 cycletime = 1000000);
+        Meca500(uint16 position, Master *m, int64 cycletime = 1000000);
 
         /**
          * Destructor: delete a slave from vector

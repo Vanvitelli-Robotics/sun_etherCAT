@@ -90,9 +90,10 @@ unsigned long diff=0;
 void setup()
 {
   uint8_t i;
-
+  
   NumRxByte = 0;
   IpAssigned = false;
+  last_rdt_sequence = 0;
 
   Serial.begin(9600); // init the debug serial line
 
@@ -213,7 +214,8 @@ void loop()
       //request to server
       //Controlla se sono presenti dati da leggere
       //time_out<100
-      while(test!=0){
+      while(test!=0 && time_out<100)
+      {
         time1=micros();
         test=Udp.parsePacket();
         if(test!=0) NumDataRx=test;
@@ -225,19 +227,19 @@ void loop()
       }
       test=1;
       time_out=0;
-      Serial.print("Diff: ");
-      Serial.println(diff);
+      
       
       //int NumDataRx = Udp.parsePacket();
+       //Udp.read(buffer, BUFFER_SIZE);
       
-
+/*
       Serial.print("Command: ");
       Serial.println(EASYCAT.BufferOut.Cust.command);
       Serial.print("Sample_count: ");
       Serial.println(EASYCAT.BufferOut.Cust.sample_count);
       Serial.print("\nStatus: ");
       Serial.println(EASYCAT.BufferIn.Cust.status);
-
+*/
       if (NumDataRx == BUFFER_SIZE)
       {
 
@@ -257,7 +259,7 @@ void loop()
         }
 
         int32_t seqdiff = int32_t(copyStruct.Cust.rdt_sequence - last_rdt_sequence);
-        last_rdt_sequence = copyStruct.Cust.rdt_sequence;
+        
         if (seqdiff < 1)
         {
           Serial.print("Error invalid packet!\n");
@@ -268,6 +270,7 @@ void loop()
         }
         else
         {
+          last_rdt_sequence = copyStruct.Cust.rdt_sequence;
           actual_time = millis();
           diff_time = actual_time - last_time;
           last_time = actual_time;
@@ -276,27 +279,8 @@ void loop()
           Serial.println(diff_time);
           
           EASYCAT.BufferIn.Cust = copyStruct.Cust;
-
-          Serial.println("Struct read: ");
-          Serial.print("rdt_sequence: ");
-          Serial.println(EASYCAT.BufferIn.Cust.rdt_sequence);
-          Serial.print("ft_sequence: ");
-          Serial.println(EASYCAT.BufferIn.Cust.ft_sequence);
-          Serial.print("status: ");
-          Serial.println(EASYCAT.BufferIn.Cust.status);
-          Serial.print("Fx: ");
-          Serial.println(EASYCAT.BufferIn.Cust.Fx);
-          Serial.print("Fy: ");
-          Serial.println(EASYCAT.BufferIn.Cust.Fy);
-          Serial.print("Fz: ");
-          Serial.println(EASYCAT.BufferIn.Cust.Fz);
-          Serial.print("Tx: ");
-          Serial.println(EASYCAT.BufferIn.Cust.Tx);
-          Serial.print("Ty: ");
-          Serial.println(EASYCAT.BufferIn.Cust.Ty);
-          Serial.print("Tz: ");
-          Serial.println(EASYCAT.BufferIn.Cust.Tz);
-          Serial.print("\n\n");
+        
+      
         }
       }
       else

@@ -22,7 +22,8 @@ int main(int argc, char *argv[])
         try
         {
             Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
-            Meca500 meca500(&master, 2);
+            ATINano43 forceSensor(1, &master, 1000000);
+            Meca500 meca500(2, &master);
 
             master.setupSlave(meca500.getPosition(), Meca500::setup_static);
 
@@ -31,16 +32,20 @@ int main(int argc, char *argv[])
             //printf("in_MECA500_master_main_printf: %x\n",ec_slave[1].inputs );
             //std::cout << "in_MECA500_master_main: " <<ec_slave[1].inputs << "\n";
             meca500.assign_pointer_struct();
+            forceSensor.assign_pointer_struct();
             try
             {
+                master.movetoState(forceSensor.getPosition(), EC_STATE_SAFE_OP, EC_TIMEOUT_TO_SAFE_OP);
                 master.movetoState(meca500.getPosition(), EC_STATE_SAFE_OP, EC_TIMEOUT_TO_SAFE_OP);
                 master.createThread(1000000);
 
                 try
                 {
                     master.movetoState(meca500.getPosition(), EC_STATE_OPERATIONAL, EC_TIMEOUT_TO_SAFE_OP);
+                    master.movetoState(forceSensor.getPosition(), EC_STATE_OPERATIONAL, EC_TIMEOUT_TO_SAFE_OP);
                     try
                     {
+                        //MECA500_CODE
                         bool as;
                         bool hs;
                         bool sm;
@@ -107,16 +112,16 @@ int main(int argc, char *argv[])
 
                         meca500.moveJoints(joints2);
 
-                        sleep(2);
+                        // sleep(2);
 
-                        meca500.moveJoints(joints);
+                        // meca500.moveJoints(joints);
 
-                        sleep(2);
+                        // sleep(2);
 
-                        meca500.moveJoints(joints3);
+                        // meca500.moveJoints(joints3);
 
-                        sleep(2);
-                        meca500.moveJoints(joints);
+                        // sleep(2);
+                        // meca500.moveJoints(joints);
 
                         sleep(2);
                         meca500.setPoint(0);
@@ -144,6 +149,43 @@ int main(int argc, char *argv[])
                         printf("Homed: %d\n", hs);
                         printf("Sim: %d\n", sm);
                         printf("Error: %d\n", es);
+
+                        //ATINANO43_CODE
+                        /*forceSensor.start_realtime();
+                        double array_forces[3];
+                        double array_torques[3];
+                        uint32 array_status[3];
+                        int y = 0;
+                        sleep(1);
+                        int prova = 0;
+                        while (TRUE)
+                        {
+                            auto start = std::chrono::system_clock::now();
+                            forceSensor.getForces(array_forces);
+                            printf("Value: \n");
+                            for (int i = 0; i < 3; i++)
+                            {
+                                printf("F_%d: %f", i, array_forces[i]);
+                                printf("\n");
+                            }
+
+                            printf("\n");
+                            forceSensor.getTorques(array_torques);
+                            for (int i = 0; i < 3; i++)
+                            {
+                                printf("T_%d: %f", i, array_torques[i]);
+                                printf("\n");
+                            }
+                            forceSensor.getStatus(array_status);
+                            auto end = std::chrono::system_clock::now();
+                            std::cout << "Time diff: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << "us.\n";
+                            printf("\n");
+                            printf("\n");
+                            y++;
+                            sleep(1);
+                            //osal_usleep(1000);
+                        }
+                        forceSensor.stop();*/
                     }
                     catch (const std::runtime_error &e)
                     {
