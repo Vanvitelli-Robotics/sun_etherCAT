@@ -52,7 +52,6 @@ namespace sun
 
     int Meca500::setup(uint16 slave)
     {
-
         int retval;
         //disattivo i PDO in inviati allo slave
         OBentry TXPDO_number = {0x1c13, 0x00, sizeof(uint8), 0};
@@ -76,7 +75,6 @@ namespace sun
         //sono consecutivi
         while (TXPDO.value <= 0x1a08)
         {
-
             if (TXPDO.value != 0x1a07)
             {
                 retval = ec_SDOwrite(slave, TXPDO.index, TXPDO.sub_index, FALSE, TXPDO.size,
