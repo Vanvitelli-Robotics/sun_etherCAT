@@ -17,6 +17,7 @@ namespace sun
         {
             master->mutex_down();
             RDTRequest->command = START_REALTIME;
+            
             int wait = 0;
             while (RDTRecord->status != STATUS_OK && wait < (TIMEOUT / SLEEP_TIME))
             {
@@ -103,7 +104,7 @@ namespace sun
             status[0] = RDTRecord->rdt_sequence;
             status[1] = RDTRecord->ft_sequence;
             status[2] = RDTRecord->status;
-            printf("rdt_sequence: %d\n", RDTRecord->rdt_sequence);
+            //printf("rdt_sequence: %d\n", RDTRecord->rdt_sequence);
             master->mutex_up();
         }
 

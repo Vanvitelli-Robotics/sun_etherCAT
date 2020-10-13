@@ -20,6 +20,7 @@ namespace sun
             int sub_index;
             int size;
             int value;
+
         } OBentry;
 
         typedef struct PACKED
@@ -201,63 +202,63 @@ namespace sun
         */
         void assign_pointer_struct();
 
-        /*
-        #############################################################################
-         #
-         #                          Request commands
-         #
-        ###############################################################################
-        */
-
+        /*******************************************************************************
+         *
+         *                          Request commands
+         *
+        ******************************************************************************/
         /**
-         * This command activates all motors and disables the brakes on joints 1,2 and 3.
-         * It must be sent before homing is started.
-         * This command only works if the robot is idle.
-         * @return int 0 = Motors activated; 
-         * @return int 1 = Motors already activated; 
-         * @return int 2 = Timeout exceeded;
+        * This command activates all motors and disables the brakes on joints 1,2 and 3.
+        * It must be sent before homing is started.
+        * This command only works if the robot is idle.
         */
-        int activateRobot();
+        void activateRobot();
 
         /**
          * Activate simulation mode.
-         * @return int 0 = Simulation mode is enabled. 
-         * @return int 2 = Timeout exceeded.
-         * @return int -1 = Motors must be deactivated.
         */
-        int activateSim();
+        void activateSim();
 
         /**
          * Deactivate simulation mode.
-         * @return int 0 = Simulation mode is deactivate.
-         * @return int 2 = Timeout exceeded.
         */
-        int deactivateSim();
+        void deactivateSim();
 
         /**
         * This command disables all motors and enages the breaks on joints 1, 2 and 3.
         * It must not be sent while the robot is moving.
         * This command should be run before powering down the robot.
         * When this command is executed, the robot loses its homing. The homing process must be repeated after reactivating the robot.
-        * @return int 0 = Motors are disabled; 
-        * @return int 2 = Timeout exceeded;
         */
-        int deactivateRobot();
+        void deactivateRobot();
 
         /**
         * This command stops the robot movement.
         * If the robot is stopped in the middle of a trajectory, the resto of the trajectory is deleted.
         * You need to send the commande 'ResumeMotion' to make the robot ready to execute new motion commands.
-        * @return int 0 = The motion was cleared;
-        * @return int 2 = Timeout exceeded.
         */
-        int clearMotion();
+        void clearMotion();
+
+        /**
+         * This commands engages the brakes of joints 1,2 and 3, if and only if the robot is powered but deactivated.
+        */
+        void brakesOn();
+
+        /**
+         * This commands disengages the brakes of joints 1,2 and 3, if and only if the robot is powered but deactivated.
+        */
+        void brakesOff();
 
         /**
          * Thic ommand returns the robot current inverse kinematica configuration, not the desired one, if any, set by the command SetConf.
          * @param int8* array_c this is the vector that contains the values requested.
         */
         void getConf(int8 *array_c);
+
+        /**
+         * This command returns the type (model) of the product.
+        */
+        void getFwVersion();
 
         /**
         * This command returns the robot joint angles in degrees.
@@ -286,49 +287,38 @@ namespace sun
         /**
         * This command starts the robot and gripper homing process. 
         * This command takes about four seconds to execute.
-        * @return int 0 = Homing done;
-        * @return int 1 = Homing already done; 
-        * @return int 2 = Timeout exceeded; 
-        * @return int -1 = Motors must be activated to do home.
         */
-        int home();
+        void home();
 
         /**
         * This command stops the robot movement.
         * The robot stops by decelerating, and not by applying the breakes.
-        * @return int 0 = Motion paused.
-        * @return int 2 = Timeout exceeded.
         */
-        int pauseMotion();
+        void pauseMotion();
 
         /**
         * This command resets the robot error status. 
-        * @return int 0 = Error was reset. 
-        * @return int 1 = There was no error to reset.
-        * @return int 2 = Timeout exceeded.
         */
-        int resetError();
+        void resetError();
 
         /**
         * This command resumes the robot movement, if it was previously paused with the command PauseMotion.
-        * This command will not work if the robot was deactivate after the last time the command PauseMotion was used, if the robot is in an error mode, 
-        * or if the rest of the trajectory was deleted usign the ClearMotion command.
-        * @return int 0 = Motion resumed.
-        * @return int 2 = Timeout exceeded.
+        * This command will not work if the robot was deactivate after the last time the command PauseMotion was used, if the robot is in an error mode, or if 
+        * the rest of the trajectory was deleted usign the ClearMotion command.
         */
-        int resumeMotion();
+        void resumeMotion();
 
         /**
         * The user could enable or disable the messages wich a command sends.
         * @param int e it is 1=enabled or 0=disable. The default value is 1.
         */
-        //void setEOB(int e = 1);
+        void setEOB(int e = 1);
 
         /**
         * The user could enable or disable the messages wich a command sends.
         * @param int e it is 1=enabled or 0=disable. The default value is 1.
         */
-        //void setEOM(int e = 1);
+        void setEOM(int e = 1);
 
         /**
         * This commmand will disable the EtherCAT protocol and enable Ethernet.
@@ -336,189 +326,163 @@ namespace sun
         void switchToEthernet();
 
         /*
-         #######################################################################
-         #
-         #                      Motion commands
-         # 
-         #######################################################################
+         *
+         *                      Motion commands
+         *
         */
 
-        /** 
-         * This command must be called before calling the first motion command. It must be the first operation to move robot.
-         * Has to be set to 1 for information to be send to the robot.
-         * @param int x = 1 -> enable to send command; x = 0 -> disable to send command.
-         * @return int -1 = Invalid input;
-         * @return int 0 = Operation succeeded.
+        /**
+        * @param int t it is the desired pause length in seconds.
         */
         int setPoint(int x);
 
-        /**
-         * This command sets the move ID.
-         * @param uint16 moveID: a distinct ID number associated with each motion command. 
-        */
         void setMoveID(uint16 moveID);
-
+        void resetMotion();
         /**
-         * This command cleans the motion command.
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode. 
+        * This command is used to add a time delay after a motion command. 
+        * The robot completes all movements sent before the Delay command and stops temporarily.
+        * @param int t it is the desired pause length in seconds.
         */
-        void resetMotion(uint16 moveID = 0);
+
+        void delay(int t);
 
         /**
         * This command makes the robot move simultaneously its joints to the specified joint set.
         * All joint rotations start and stop simultaneously.
         * @param float theta_i the angle of joint i (i=1,...,6) in degrees
-        * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
         */
         void moveJoints(float *theta, uint16 moveID = 0);
 
         /**
         * This command makes the robot move its TRF to a specific pose with respect to the WRF
         * @param float pose[0], pose[1], pose[2] are respectively x,y,z coordinates of the origin of the TRF w.r.t. the WRF in mm
-        * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles representing the orientation 
-        * of the TRF w.r.t. the WRF in degrees.
-        * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles representing the orientation of the TRF w.r.t. the WRF in degrees.
         */
-        void moveLin(float *pose, uint16 moveID = 0);
+        void moveLin(float *pose);
 
         /**
         * This command is similar to the MoveLin command but allows a desired pose to be specified relative to the current pose of the TRF.
-        * @param float pose[0], pose[1], pose[2] are respectively x,y,z the position coordinates, in mm.
-        * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles, in degrees.
-        * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        * @param float pose[0], pose[1], pose[2] are respectively x,y,z the position coordinates, in mm
+        * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles, in degrees
         */
-        void moveLinRelTRF(float *pose, uint16 moveID = 0);
-
+        void moveLinRelTRF(float *pose);
         /**
          * This command is similar to the MoveLinRelTRF command, but it is defined with respect to a preference frame that has the same orientation as the WRF.
-         * @param float pose[0], pose[1], pose[2] are respectively x,y,z the position coordinates, in mm.
-         * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles, in degrees.
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+         * @param float pose[0], pose[1], pose[2] are respectively x,y,z the position coordinates, in mm
+         * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles, in degrees
         */
-        void moveLinRelWRF(float *pose, uint16 moveID = 0);
+        void moveLinRelWRF(float *pose);
 
         /**
          * This command makes the robot move its TRF to a specific pose with respect to the WRF.
          * @param float pose[0], pose[1], pose[2] are respectively x,y,z the coordinates of the origin of the TRF w.r.t. the WRF, in mm
-         * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles representing the orientation of the TRF w.r.t. the WRF, in degrees.
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+         * @param float pose[3], pose[4], pose[5] are respectively alpha, beta, gamma the Euler angles representing the orientation of the TRF w.r.t. the WRF, in degrees
         */
-        void movePose(float *pose, uint16 moveID = 0);
+        void movePose(float *pose);
 
         /**
          * This command enables or disables the automatic robot configuration selection and has effect only on the MovePose command. 
-         * @param int e e=0 means disable, e=1 means enable. SetAutoConf is enabled by default.
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-         * @return int 0 = operation succeeded.
-         * @return int -1 = invalid input.
+         * @param int e e=0 means disable, e=1 means enable. SetAutoConf is enabled by default
         */
-        int setAutoConf(int e, uint16 moveID = 0);
+        void setAutoConf(int e);
 
         /**
          * This command enables/disables the robot's blending feature.
          * @param float p percentage of blending, ranging from 0 (blending disabled) to 100%. Blending is enabled at 100% by default. 
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-         * @return int 0 = blending set.
-         * @return int -1 = invalid input.
         */
-        int setBlending(float p, uint16 moveID = 0);
+        void setBlending(float p);
 
         /**
          *This command limits the Cartesian acceleration (both the linear and the angular) of the end-effector.
-         *@param float p precentage of maximum acceleration of the end-effector, ranging from 1% to 100%. The default end-effector acceleration limit is 100%.
-         *@param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode. 
-         * @return int 0 = operation succeeded.
-         * @return int -1 = invalid input.
+         @param float p precentage of maximum acceleration of the end-effector, ranging from 1% to 100%. The default end-effector acceleration limit is 100% 
         */
-        int setCartAcc(float p, uint16 moveID = 0);
+        void setCartAcc(float p);
 
         /**
          * This command limits the angular velocity of the robot TRF with respect to its WRF. 
          * It only affects the movements generated by the MoveLin, MoveLinRelTRF and MoveLineRelWRF commands.
          * @param float omega: TRF angular velocity limit, ranging from 0.001°/s to 180°/s. The default end-effector angular velocity limit is 45°/s.
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-         * @return int 0 = operation succeeded.
-         * @return int -1 = invalid input.
         */
-        int setCartAngVel(float omega, uint16 moveID = 0);
+        void setCartAngVel(float omega);
 
         /**
          * This command limits the Cartesian linear velocity of the robot's TRF with respect to its WRF. 
          * It only affect the movement generated by the MoveLin, MoveLinRelTRF and MoveLinRelWRF commands.
          * @param float v; velocity limit
-         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-         * @return int 0 = operation succeeded.
-         * @return int -1 = invalid input.
         */
-        int setCartLinVel(float v, uint16 moveID = 0);
+        void setCartLinVel(float v);
 
         /**
          *This command sets the desired robot inverse kinematic configuration to be observed in the MovePose command.
          *The robot inverse kinematic configuration can be automatically selected byusing the SetAutoConf command. 
          *Using SetConf automatically disables the automatic configuration selection.
-         *@param float c[0]=c1: first inverse kinematics configuration parameter, either −1 or 1
-         *@param float c[1]=c3: second inverse kinematics configuration parameter, either −1 or 1
-         *@param float c[2]=c5: third inverse kinematics configuration parameter, either −1 or 1
-         *@param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-         *@return int 0 = operation succeeded.
-         *@return int -1 = invalid input.
+         @param float c[0]=c1: first inverse kinematics configuration parameter, either −1 or 1
+         @param float c[1]=c3: second inverse kinematics configuration parameter, either −1 or 1
+         @param float c[2]=c5: third inverse kinematics configuration parameter, either −1 or 1
         */
-        int setConf(float *c, uint16 moveID = 0);
+        void setConf(float *c);
 
         /**
         * This command limits the acceleration of the joints. Note that this command makes the robot stop, even if blending is enabled.
         * @param float p: percentage of maximum acceleration of the joints, ranging from 1% to 100%. The default joint acceleration limit is 100%
-        * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-        * @return int 0 = joint acceleration set.
-        * @return int -1 = invalid input.         
         */
-        int setJoinAcc(float p, uint16 moveID = 0);
+        void setJoinAcc(float p);
 
         /**
         * This command limits the angular velocities of the robot joints. It affects the movements generated by the MovePose and MoveJoints commands.
         * @param float p: percentage of maximum joint velocities, ranging from 1 to 100%. By default, the limit is set to 25%.
-        * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
-        * @return int 0 = joint velocieties set.
-        * @return int -1 = invalid input.
         */
-        int setJoinVel(float p, uint16 moveID = 0);
+        void setJoinVel(float p);
 
         /**
         *This command de nes the pose of the TRF with respect to the FRF. Note that this command
         *makes the robot come to a complete stop, even if blending is enabled.
         *@param float pose[0], pose[1], pose[2] are respectively x , y , and z: the coordinates of the origin of the TRF w.r.t. the FRF, in mm
-        *@param float pose[3], pose[4], pose[5] are respectively α , β , and γ: the Euler angles representing the orientation of the TRF w.r.t. the FRF, in degrees.
-        *By default, the TRF coincides with the FRF.
-        *@param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        *@param float pose[3], pose[4], pose[5] are respectively α , β , and γ: the Euler angles representing the orientation of the TRF w.r.t. the FRF, in degrees.By default, the TRF coincides with the FRF.
         */
-        void setTRF(float *pose, uint16 moveID = 0);
+        void setTRF(float *pose);
 
         /**
-         *This command defines the pose of the WRF with respect to the BRF. Note that this com-
-         *mand makes the robot come to a complete stop, even if blending is enabled.
-         *@param float  pose[0], pose[1], pose[2] are respectively x , y , and z : the coordinates of the origin of the WRF w.r.t. the BRF, in mm
-         *@param float  pose[3], pose[4], pose[5] are respectively α , β , and γ : the Euler angles representing the orientation of the WRF w.r.t. the BRF,in degrees.
-         *@param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        *This command defines the pose of the WRF with respect to the BRF. Note that this com-
+        *mand makes the robot come to a complete stop, even if blending is enabled.
+        *
+        *@param float  pose[0], pose[1], pose[2] are respectively x , y , and z : the coordinates of the origin of the WRF w.r.t. the BRF, in mm
+        *@param float  pose[3], pose[4], pose[5] are respectively α , β , and γ : the Euler angles representing the orientation of the WRF w.r.t. the BRF,in degrees.
         */
-        void setWRF(float *pose, uint16 moveID = 0);
+        void setWRF(float *pose);
 
         /**
-         *This command sets the timeout after a velocity-mode motion command (MoveJointsVel,
-         *MoveLinVelTRF, or MoveLinVelWRF), after which all joint speeds will be set to zero unless
-         *another velocity-mode motion command is received. The SetVelTimeout command should
-         *be regarded simply as a safety precaution.
-         *Arguments
-         *@param float timeout: desired time interval, in seconds, ranging from 0.001 s to 1 s.
-         *By default, the velocity-mode timeout is 0.050 s.
-         *@param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        *This command sets the timeout after a velocity-mode motion command (MoveJointsVel,
+        *MoveLinVelTRF, or MoveLinVelWRF), after which all joint speeds will be set to zero unless
+        *another velocity-mode motion command is received. The SetVelTimeout command should
+        *be regarded simply as a safety precaution.
+        *Arguments
+        *@param float timeout: desired time interval, in seconds, ranging from 0.001 s to 1 s.
+        *By default, the velocity-mode timeout is 0.050 s.
+        *
         */
-        //void SetVelTimeout(float timeout, uint16 moveID = 0);
+        void SetVelTimeout(float timeout);
 
-        /**
-         * This command returns the error.
-         * @return int 2= Timeout exceeded;
-        */
-        int getError();
+        void getError();
+
+        void prove();
+
+        /*template <typename T>
+        void send_data(T *out_struct, int offset)
+        {
+            uint8 array_out[sizeof(T)];
+            std::memcpy(array_out, out_struct, sizeof(T));
+            master->write_slave(array_out, position, sizeof(T), offset);
+        }
+
+        template <typename T>
+        void receive_data(T *in_struct, int offset)
+        {
+            uint8 array_in[sizeof(in_struct)];
+            master->read_slave(array_in, position, sizeof(array_in), offset);
+            std::memcpy(in_struct, array_in, sizeof(in_struct));
+             
+        }*/
     };
 
 } // namespace sun

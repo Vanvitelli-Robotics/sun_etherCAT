@@ -105,19 +105,45 @@ sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o.provides: sun_slave/CMakeFi
 sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o.provides.build: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o
 
 
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: sun_slave/CMakeFiles/sun_slave.dir/flags.make
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: sun_slave/src/Meca500_versione1.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/asusrobot/Documents/Federico-De_Simone/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o"
+	cd /home/asusrobot/Documents/Federico-De_Simone/sun_slave && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o -c /home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500_versione1.cpp
+
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.i"
+	cd /home/asusrobot/Documents/Federico-De_Simone/sun_slave && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500_versione1.cpp > CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.i
+
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.s"
+	cd /home/asusrobot/Documents/Federico-De_Simone/sun_slave && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500_versione1.cpp -o CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.s
+
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.requires:
+
+.PHONY : sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.requires
+
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.provides: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.requires
+	$(MAKE) -f sun_slave/CMakeFiles/sun_slave.dir/build.make sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.provides.build
+.PHONY : sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.provides
+
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.provides.build: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o
+
+
 # Object files for target sun_slave
 sun_slave_OBJECTS = \
 "CMakeFiles/sun_slave.dir/src/ATINano43.cpp.o" \
-"CMakeFiles/sun_slave.dir/src/Meca500.cpp.o"
+"CMakeFiles/sun_slave.dir/src/Meca500.cpp.o" \
+"CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o"
 
 # External object files for target sun_slave
 sun_slave_EXTERNAL_OBJECTS =
 
 sun_slave/libsun_slave.a: sun_slave/CMakeFiles/sun_slave.dir/src/ATINano43.cpp.o
 sun_slave/libsun_slave.a: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o
+sun_slave/libsun_slave.a: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o
 sun_slave/libsun_slave.a: sun_slave/CMakeFiles/sun_slave.dir/build.make
 sun_slave/libsun_slave.a: sun_slave/CMakeFiles/sun_slave.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/asusrobot/Documents/Federico-De_Simone/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX static library libsun_slave.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/asusrobot/Documents/Federico-De_Simone/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX static library libsun_slave.a"
 	cd /home/asusrobot/Documents/Federico-De_Simone/sun_slave && $(CMAKE_COMMAND) -P CMakeFiles/sun_slave.dir/cmake_clean_target.cmake
 	cd /home/asusrobot/Documents/Federico-De_Simone/sun_slave && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/sun_slave.dir/link.txt --verbose=$(VERBOSE)
 
@@ -128,6 +154,7 @@ sun_slave/CMakeFiles/sun_slave.dir/build: sun_slave/libsun_slave.a
 
 sun_slave/CMakeFiles/sun_slave.dir/requires: sun_slave/CMakeFiles/sun_slave.dir/src/ATINano43.cpp.o.requires
 sun_slave/CMakeFiles/sun_slave.dir/requires: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o.requires
+sun_slave/CMakeFiles/sun_slave.dir/requires: sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o.requires
 
 .PHONY : sun_slave/CMakeFiles/sun_slave.dir/requires
 

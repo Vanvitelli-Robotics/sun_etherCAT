@@ -70,8 +70,8 @@ unsigned long diff_time = 0;
 unsigned long time1 = 0;
 unsigned long diff = 0;
 int UDP_data = -1;
-unsigned long time_array[5000];
-unsigned long time_correct_packet[5000];
+unsigned long time_array[500];
+unsigned long time_correct_packet[500];
 int iteration;
 
 //---- setup ---------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ void loop()
         if (command_prev == 2) //start streaming real time communication
         {
             int i = 0;
-            while (UDP_data != 0 && time_out < 100)
+            while (UDP_data != 0 && time_out < 1)
             {
                 time1 = micros();
                 UDP_data = Udp.parsePacket();
@@ -218,7 +218,7 @@ void loop()
                     NumDataRx = UDP_data;
                 Udp.read(buffer, UDP_data);
                 diff = micros() - time1;
-                if (i < 5000)
+                if (i < 500)
                     time_array[i++] = diff;
                 time_out++;
             }
@@ -241,7 +241,7 @@ void loop()
                         actual_time = millis();
                         diff_time = actual_time - last_time;
                         last_time = actual_time;
-                        if (iteration < 5000)
+                        if (iteration < 500)
                         {
                             time_correct_packet[iteration] = diff_time;
                             iteration++;

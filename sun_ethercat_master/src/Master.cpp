@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include <stdexcept>
 #include <cstring>
+#include <fstream>
+
 
 #define SET_BIT(prev, bit) (prev | (0x0ff & bit))
 #define CLEAR_BIT(prev, bit) (prev & (0x0ff & (~bit)))
@@ -201,7 +203,7 @@ namespace sun
         }
 
         //for (int i = 0; i < 5000; i++)
-        int i = 0;
+        i = 0;
         while (shutdown)
         {
             time1 = ec_DCtime;
@@ -255,29 +257,6 @@ namespace sun
             throw std::runtime_error("Error config_map\n");
     }
 
-    // //Allows the slave to write the struct to the buffer
-    // void Master::write_slave(uint8 *array, int slave, int dim, int offset)
-    // {
-    //     uint8 *data_ptr;
-    //     data_ptr = ec_slave[slave].outputs + offset;
-    //     mtx.lock();
-    //     std::memcpy(data_ptr, array, dim);
-    //     mtx.unlock();
-    //     //printf("DIM: %d\n", dim);
-    //     //printf("OFFSET: %d\n", offset);
-    //     //printf("Send_data: %u\n", (uint32*)*data_ptr);
-    // }
-
-    // //Allows the slave to read from the buffer
-    // void Master::read_slave(uint8 *array, int slave, int dim, int offset)
-    // {
-    //     uint8 *data_ptr;
-    //     data_ptr = ec_slave[slave].inputs + offset;
-    //     mtx.lock();
-    //     std::memcpy(array, data_ptr, dim);
-    //     mtx.unlock();
-    // }
-
     void Master::stampa()
     {
         // for (int i = 0; i < 5000; i++)
@@ -287,12 +266,21 @@ namespace sun
         //     fflush(stdout);
         //     osal_usleep(1000);
         // }
-         for (int i = 0; i < 50000; i++)
+
+        std::ofstream oFile("Cycle_time.txt", std::ios_base::out | std::ios_base::trunc);
+        if (oFile.is_open())
         {
-            printf("Cycle_time_%d: %d \n", i+1, timecycle[i]);
+            for (int y = 0; y < i; y++)
+                oFile << timecycle[y] << "\n";
+            oFile.close();
+        }
+        
+        /*for (int i = 0; i < 50000; i++)
+        {
+            printf("Cycle_time_%d: %d \n", i + 1, timecycle[i]);
             fflush(stdout);
             osal_usleep(1000);
-        }
+        }*/
     }
 
     void Master::deactivate()

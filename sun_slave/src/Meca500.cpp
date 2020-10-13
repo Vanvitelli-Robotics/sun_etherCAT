@@ -1,10 +1,9 @@
 #include "Meca500.h"
 #include <cstring>
 #include <cstddef>
-
 #include <stdexcept>
 
-#define TIMEOUT_RQ 100000
+#define TIMEOUT_RQ 200000
 
 #define SET_BIT(prev, bit) (prev | (0x0ff & bit))
 #define CLEAR_BIT(prev, bit) (prev & (0x0ff & (~bit)))
@@ -121,7 +120,7 @@ namespace sun
         retval = ec_SDOwrite(slave, RXPDO_number.index, RXPDO_number.sub_index,
                              FALSE, RXPDO_number.size, &(RXPDO_number.value), EC_TIMEOUTSAFE);
         printf("esito_numero=%d\n", retval);
-        //ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
+        ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
 
         return 0;
     }
@@ -148,14 +147,14 @@ namespace sun
     *                               Request commands
     */
 
-    void Meca500::activateRobot()
+    int Meca500::activateRobot()
     {
         int time = 0;
         master->mutex_down();
         if (GET_BIT(0x02, out_MECA500->status_bits == 2))
         {
             master->mutex_up();
-            std::cout << "Motors already activated.\n";
+            return 1; //Motors already activated
         }
         else
         {
@@ -169,66 +168,66 @@ namespace sun
                 time++;
                 master->mutex_down();
             }
-            master->mutex_up();
-
-            if (time == TIMEOUT_RQ)
-            {
-                std::cout << "Timeout exceeded!\n";
-            }
-            master->mutex_down();
-            if (GET_BIT(0x02, out_MECA500->status_bits) != 2)
+            if (GET_BIT(0x02, out_MECA500->status_bits) != 2 && time == TIMEOUT_RQ)
             {
                 master->mutex_up();
-                getError();
+                return getError(); //timeout exceeded
             }
             else
             {
-                std::cout << "Motors activated.\n";
                 master->mutex_up();
+                return 0; //Motors activated
             }
         }
     }
 
-    void Meca500::activateSim()
+    int Meca500::activateSim()
     {
         //To enable the simulation mode, the robot must be deactivated first.
         int time = 0;
-        deactivateRobot();
-        in_MECA500->robot_control_data = SET_BIT(in_MECA500->robot_control_data, 0x05);
-        while (GET_BIT(0x04, out_MECA500->status_bits) != 1 && time <= TIMEOUT_RQ)
+        if (deactivateRobot() != 0)
+            return -1;
+
+        master->mutex_down();
+        in_MECA500->robot_control_data = SET_BIT(in_MECA500->robot_control_data, 0x10);
+        while (GET_BIT(0x08, out_MECA500->status_bits) != 8 && time < TIMEOUT_RQ)
         {
-            usleep(1000);
+            master->mutex_up();
+            usleep(10);
             time++;
+            master->mutex_down();
         }
+        master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
-            std::cout << "Timeout exceeded!\n";
-            getError();
+            return getError(); //Timeout exceeded!
         }
         else
-            std::cout << "Simulation mode is enabled.\n";
+            return 0; //Simulation mode is enabled.
     }
 
-    void Meca500::deactivateSim()
+    int Meca500::deactivateSim()
     {
         int time = 0;
-        in_MECA500->robot_control_data = CLEAR_BIT(in_MECA500->robot_control_data, 0x05);
-        while (GET_BIT(0x04, out_MECA500->status_bits) != 0 && time <= TIMEOUT_RQ)
+        master->mutex_down();
+        in_MECA500->robot_control_data = CLEAR_BIT(in_MECA500->robot_control_data, 0x10);
+        while (GET_BIT(0x08, out_MECA500->status_bits) != 8 && time < TIMEOUT_RQ)
         {
-
-            usleep(1000);
+            master->mutex_up();
+            usleep(10);
             time++;
+            master->mutex_down();
         }
+        master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
-            std::cout << "Timeout exceeded!\n";
-            getError();
+            return getError(); //Timeout exceeded!
         }
         else
-            std::cout << "Simulation mode is disabled.\n";
+            return 0; //Simulation mode is disabled
     }
 
-    void Meca500::deactivateRobot()
+    int Meca500::deactivateRobot()
     {
         int time = 0;
 
@@ -250,14 +249,13 @@ namespace sun
         master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
-            std::cout << "Timeout exceeded!\n";
-            getError();
+            return getError(); //Timeout exceeded!
         }
         else
-            std::cout << "Motors are disabled.\n";
+            return 0; //Motors are disabled.
     }
 
-    void Meca500::home()
+    int Meca500::home()
     {
         int time = 0;
         //Verify homing already done
@@ -265,7 +263,7 @@ namespace sun
         if (GET_BIT(0x04, out_MECA500->status_bits) == 4)
         {
             master->mutex_up();
-            std::cout << "Homing already done.\n";
+            return 1; //Homing already done
         }
         else
         {
@@ -284,27 +282,26 @@ namespace sun
                 master->mutex_up();
                 if (time == TIMEOUT_RQ)
                 {
-                    std::cout << "Timeout exceeded!\n";
-                    getError();
+                    return getError(); //Timeout exceeded!
                 }
                 else
-                    std::cout << "Homing done.\n";
+                    return 0; //Homing done
             }
             else
             {
-                std::cout << "Motors must be activated to do home.\n";
+                return -1; //Motors must be activated to do home.
             }
         }
     }
 
-    void Meca500::resetError()
+    int Meca500::resetError()
     {
         int time = 0;
         master->mutex_down();
         if (out_MECA500->error == 0)
         {
             master->mutex_up();
-            std::cout << "There was no error to reset.\n";
+            return 1; //There was no error to reset
         }
         else
         {
@@ -314,32 +311,35 @@ namespace sun
                 master->mutex_up();
                 time++;
                 master->mutex_down();
-                std::cout << "Error: " << out_MECA500->error << "\n";
             }
             master->mutex_up();
-            std::cout << "Time: " << time << "\n";
+
             if (time == TIMEOUT_RQ)
-                std::cout << "Timeout exceeded!\n";
+                return getError(); //Timeout exceeded!
             else
-                std::cout << "The error was reset.\n";
+                return 0; //The error was reset
         }
     }
 
-    void Meca500::clearMotion()
+    int Meca500::clearMotion()
     {
         int time = 0;
-        in_MECA500->motion_control.motion_control_data = SET_BIT(in_MECA500->motion_control.motion_control_data, 0x40000);
-        while (GET_BIT(0x08, out_MECA500->motion_status.motion_bits) != 0 && time <= TIMEOUT_RQ)
+        master->mutex_down();
+        in_MECA500->motion_control.motion_control_data = SET_BIT(in_MECA500->motion_control.motion_control_data, 0x04);
+        while (GET_BIT(0x08, out_MECA500->motion_status.motion_bits) != 8 && time <= TIMEOUT_RQ)
         {
-            usleep(1000);
+            master->mutex_up();
+            usleep(10);
             time++;
+            master->mutex_down();
         }
+        master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
-            std::cout << "Timeout exceeded!\n";
+            return getError(); //Timeout exceeded!
         }
         else
-            std::cout << "The motion was cleared.\n";
+            return 0; //The motion was cleared
     }
 
     void Meca500::getConf(int8 *array_c)
@@ -415,63 +415,61 @@ namespace sun
         master->mutex_up();
     }
 
-    void Meca500::pauseMotion()
+    int Meca500::pauseMotion()
     {
         int time = 0;
-        in_MECA500->motion_control.motion_control_data = SET_BIT(in_MECA500->motion_control.motion_control_data, 0x20000);
-        while (GET_BIT(0x01, out_MECA500->motion_status.motion_bits) != 0 && time <= TIMEOUT_RQ)
+        master->mutex_down();
+        in_MECA500->motion_control.motion_control_data = SET_BIT(in_MECA500->motion_control.motion_control_data, 0x02);
+        while (GET_BIT(0x01, out_MECA500->motion_status.motion_bits) != 1 && time < TIMEOUT_RQ)
         {
-            usleep(1000);
+            master->mutex_up();
+            usleep(10);
             time++;
+            master->mutex_down();
         }
+        master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
-            std::cout << "Timeout exceeded!\n";
+            return getError(); //Timeout exceeded!
         }
         else
-            std::cout << "Motion paused.\n";
+            return 0; //Motion paused.
     }
 
-    /*void Meca500::resumeMotion()
-    {
-
-    }
-
-    void Meca500::setEOB()
+    //Must be called after clear motion and reset error commands.
+    int Meca500::resumeMotion()
     {
         int time = 0;
-        
-        while (GET_BIT(0x01, out_MECA500->motion_status.motion_bits) != 0 && time <= TIMEOUT_RQ)
+        master->mutex_down();
+        in_MECA500->motion_control.motion_control_data = CLEAR_BIT(in_MECA500->motion_control.motion_control_data, 0x02);
+        in_MECA500->motion_control.motion_control_data = CLEAR_BIT(in_MECA500->motion_control.motion_control_data, 0x04);
+        while ((GET_BIT(0x01, out_MECA500->motion_status.motion_bits) != 1 || GET_BIT(0x08, out_MECA500->motion_status.motion_bits) != 8) && time < TIMEOUT_RQ)
         {
-            usleep(1000);
+            master->mutex_up();
+            usleep(10);
             time++;
+            master->mutex_down();
         }
+        master->mutex_up();
         if (time == TIMEOUT_RQ)
         {
-            std::cout << "Timeout exceeded!\n";
+            return getError(); //Timeout exceeded!
         }
         else
-            std::cout << "Motion paused.\n";
+            return 0; //Motion resumed.
     }
 
-    void Meca500::setEOM()
-    {
-
-    }
-    
-    void Meca500::switchToEthernet()
-    {
-    }
-    */
+    // void Meca500::switchToEthernet()
+    // {
+    //      retval = ec_SDOwrite(this->position, TXPDO_number.index, TXPDO_number.sub_index,
+    //                          FALSE, TXPDO_number.size, &(TXPDO_number.value), EC_TIMEOUTSAFE);
+    // }
 
     /*
     *                               Motion commands
+    * WARNING: call getError() after each motion command to verify if there is an error
     */
 
-    //ATTENZIONE
-    //PER TUTTI I COMANDI CHE SEGUONO VA VERIFICATA SE LA DIMENSIONE DEL VETTORE
-    //DI INGRESSO E' QUELLA GIUSTA!!!!
-    //DA IMPLEMENTARE
     int Meca500::setPoint(int x)
     {
         if (x == 1)
@@ -480,7 +478,7 @@ namespace sun
             in_MECA500->motion_control.motion_control_data = SET_BIT(in_MECA500->motion_control.motion_control_data, 0x01);
             master->mutex_up();
         }
-        if (x == 0)
+        else if (x == 0)
         {
             master->mutex_down();
             in_MECA500->motion_control.motion_control_data = CLEAR_BIT(in_MECA500->motion_control.motion_control_data, 0x01);
@@ -500,8 +498,9 @@ namespace sun
         master->mutex_up();
     }
 
-    void Meca500::resetMotion()
+    void Meca500::resetMotion(uint16 moveID)
     {
+        setMoveID(moveID);
         master->mutex_down();
         in_MECA500->movement.motion_command = 0;
         in_MECA500->movement.variables.varf[0] = 0;
@@ -515,7 +514,6 @@ namespace sun
 
     void Meca500::moveJoints(float *theta, uint16 moveID)
     {
-        //setPoint(1);
         setMoveID(moveID);
 
         master->mutex_down();
@@ -527,12 +525,13 @@ namespace sun
         in_MECA500->movement.variables.varf[4] = theta[4];
         in_MECA500->movement.variables.varf[5] = theta[5];
         master->mutex_up();
-
-        //setPoint(0);
     }
 
-    void Meca500::movePose(float *pose)
+    void Meca500::movePose(float *pose, uint16 moveID)
     {
+        setMoveID(moveID);
+
+        master->mutex_down();
         in_MECA500->movement.motion_command = 2;
         in_MECA500->movement.variables.varf[0] = pose[0];
         in_MECA500->movement.variables.varf[1] = pose[1];
@@ -540,10 +539,14 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = pose[3];
         in_MECA500->movement.variables.varf[4] = pose[4];
         in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
     }
 
-    void Meca500::moveLin(float *pose)
+    void Meca500::moveLin(float *pose, uint16 moveID)
     {
+        setMoveID(moveID);
+
+        master->mutex_down();
         in_MECA500->movement.motion_command = 3;
         in_MECA500->movement.variables.varf[0] = pose[0];
         in_MECA500->movement.variables.varf[1] = pose[1];
@@ -551,10 +554,14 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = pose[3];
         in_MECA500->movement.variables.varf[4] = pose[4];
         in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
     }
 
-    void Meca500::moveLinRelTRF(float *pose)
+    void Meca500::moveLinRelTRF(float *pose, uint16 moveID)
     {
+        setMoveID(moveID);
+
+        master->mutex_down();
         in_MECA500->movement.motion_command = 4;
         in_MECA500->movement.variables.varf[0] = pose[0];
         in_MECA500->movement.variables.varf[1] = pose[1];
@@ -562,10 +569,14 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = pose[3];
         in_MECA500->movement.variables.varf[4] = pose[4];
         in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
     }
 
-    void Meca500::moveLinRelWRF(float *pose)
+    void Meca500::moveLinRelWRF(float *pose, uint16 moveID)
     {
+        setMoveID(moveID);
+
+        master->mutex_down();
         in_MECA500->movement.motion_command = 5;
         in_MECA500->movement.variables.varf[0] = pose[0];
         in_MECA500->movement.variables.varf[1] = pose[1];
@@ -573,79 +584,105 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = pose[3];
         in_MECA500->movement.variables.varf[4] = pose[4];
         in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
     }
 
-    void Meca500::setBlending(float p)
+    int Meca500::setBlending(float p, uint16 moveID)
     {
+        setMoveID(moveID);
         if (p > 100 || p < 0)
-            std::cout << "Error value of percentage! The value must be 0<p<100.\n";
+            return -1; //Error value of percentage! The value must be 0<p<100
         else
         {
-
             //0<p<100
+            master->mutex_down();
             in_MECA500->movement.motion_command = 7;
             in_MECA500->movement.variables.varf[0] = p;
+            master->mutex_up();
+            return 0;
         }
     }
 
-    void Meca500::setJoinVel(float p)
+    int Meca500::setJoinVel(float p, uint16 moveID)
     {
+        setMoveID(moveID);
         if (p > 100 || p < 0)
-            std::cout << "Error value of percentage! The value must be 0<p<100.\n";
+            return -1; //Error value of percentage! The value must be 0<p<100
         else
         {
+            master->mutex_down();
             in_MECA500->movement.motion_command = 8;
             in_MECA500->movement.variables.varf[0] = p;
+            master->mutex_up();
+            return 0;
         }
     }
 
-    void Meca500::setJoinAcc(float p)
+    int Meca500::setJoinAcc(float p, uint16 moveID)
     {
         //NEL MANUALE RISULTA P<600 ??????
+        setMoveID(moveID);
         if (p > 100 || p < 0)
-            std::cout << "Error value of percentage! The value must be 0<p<100.\n";
+            return -1; //Error value of percentage! The value must be 0<p<100
         else
         {
+            master->mutex_down();
             in_MECA500->movement.motion_command = 9;
             in_MECA500->movement.variables.varf[0] = p;
+            master->mutex_up();
+            return 0;
         }
     }
 
-    void Meca500::setCartAngVel(float omega)
+    int Meca500::setCartAngVel(float omega, uint16 moveID)
     {
+        setMoveID(moveID);
         if (omega > 300 || omega < 0.001)
-            std::cout << "Error value of percentage! The value must be 0.001<p<300.\n";
+            return -1; //Error value of percentage! The value must be 0.001<p<300.
         else
         {
+            master->mutex_down();
             in_MECA500->movement.motion_command = 10;
             in_MECA500->movement.variables.varf[0] = omega;
+            master->mutex_up();
+            return 0;
         }
     }
 
-    void Meca500::setCartLinVel(float v)
+    int Meca500::setCartLinVel(float v, uint16 moveID)
     {
+        setMoveID(moveID);
         if (v > 1000 || v < 0.001)
-            std::cout << "Error value of percentage! The value must be 0.001<p<1000.\n";
+            return -1; //Error value of percentage! The value must be 0.001<p<1000.
         else
         {
+            master->mutex_down();
             in_MECA500->movement.motion_command = 11;
             in_MECA500->movement.variables.varf[0] = v;
+            master->mutex_up();
+            return 0;
         }
     }
 
-    void Meca500::setCartAcc(float p)
+    int Meca500::setCartAcc(float p, uint16 moveID)
     {
+        setMoveID(moveID);
         if (p > 100 || p < 0.001)
-            std::cout << "Error value of percentage! The value must be 0.001<p<100.\n";
+            return -1; //Error value of percentage! The value must be 0.001<p<100.
         else
         {
+            master->mutex_down();
             in_MECA500->movement.motion_command = 12;
             in_MECA500->movement.variables.varf[0] = p;
+            master->mutex_up();
+            return 0;
         }
     }
 
-    void Meca500::setTRF(float *pose)
+    void Meca500::setTRF(float *pose, uint16 moveID)
     {
+        setMoveID(moveID);
+        master->mutex_down();
         in_MECA500->movement.motion_command = 13;
         in_MECA500->movement.variables.varf[0] = pose[0];
         in_MECA500->movement.variables.varf[1] = pose[1];
@@ -653,10 +690,13 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = pose[3];
         in_MECA500->movement.variables.varf[4] = pose[4];
         in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
     }
 
-    void Meca500::setWRF(float *pose)
+    void Meca500::setWRF(float *pose, uint16 moveID)
     {
+        setMoveID(moveID);
+        master->mutex_down();
         in_MECA500->movement.motion_command = 14;
         in_MECA500->movement.variables.varf[0] = pose[0];
         in_MECA500->movement.variables.varf[1] = pose[1];
@@ -664,11 +704,14 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = pose[3];
         in_MECA500->movement.variables.varf[4] = pose[4];
         in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
     }
 
-    void Meca500::setConf(float *c)
+    int Meca500::setConf(float *c, uint16 moveID)
     {
+        setMoveID(moveID);
         int i = 0;
+        master->mutex_down();
         in_MECA500->movement.motion_command = 15;
         for (i = 0; i < 3; i++)
         {
@@ -677,43 +720,108 @@ namespace sun
             else
                 i = 4;
         }
+        master->mutex_up();
         if (i == 4)
-            std::cout << "Error values of parameter c! They must be 1 or -1.\n";
+            return -1; //Error values of parameter c! They must be 1 or -1.
+        return 0;
     }
 
-    void Meca500::setAutoConf(int e)
+    int Meca500::setAutoConf(int e, uint16 moveID)
     {
+        setMoveID(moveID);
         if (e == 1 || e == -1)
         {
+            master->mutex_down();
             in_MECA500->movement.motion_command = 16;
             in_MECA500->movement.variables.varf[0] = e;
+            master->mutex_up();
+            return 0;
         }
         else
-            std::cout << "Error values of parameter e! They must be 1 or -1.\n";
+            return -1; //Error: values of parameter e! They must be 1 or -1.
     }
 
-    void Meca500::prove()
+    void Meca500::moveJointsVel(float *omega, uint16 moveID)
     {
-        uint32 activate = 2;
-        *(ec_slave[1].outputs) = activate;
-        std::cout << "Lettura_struct_activate: " << in_MECA500->robot_control_data << "\n";
+        setMoveID(moveID);
+        master->mutex_down();
+        in_MECA500->movement.motion_command = 21;
+        in_MECA500->movement.variables.varf[0] = omega[0];
+        in_MECA500->movement.variables.varf[1] = omega[1];
+        in_MECA500->movement.variables.varf[2] = omega[2];
+        in_MECA500->movement.variables.varf[3] = omega[3];
+        in_MECA500->movement.variables.varf[4] = omega[4];
+        in_MECA500->movement.variables.varf[5] = omega[5];
+        master->mutex_up();
     }
 
-    void Meca500::getError()
+    void Meca500::SetVelTimeout(float timeout, uint16 moveID)
     {
-        //receive_data(&(out_MECA500.robot_status), offsetof(out_MECA500t, robot_status));
-        //int status_error;
+        setMoveID(moveID);
+        master->mutex_down();
+        in_MECA500->movement.motion_command = 24;
+        in_MECA500->movement.variables.varf[0] = timeout;
+        master->mutex_up();
+    }
+
+    int Meca500::getError()
+    {
         master->mutex_down();
         switch (out_MECA500->error)
         {
         case (0):
-            std::cout << "Operation succeeded.\n";
+            return 2;
+            break;
+        case (1000):
+            throw std::runtime_error("1000: Command buffer is full.\n");
+            break;
+        case (1001):
+            throw std::runtime_error("1001: Unknown or empty command.\n");
+            break;
+        case (1002):
+            throw std::runtime_error("1002: A parenthesis or a comma has been omitted.\n");
+            break;
+        case (1003):
+            throw std::runtime_error("1003: Wrong number of arguments or invalid input (e.g. the argument is out of range).\n");
+            break;
+        case (1005):
+            throw std::runtime_error("1005: The robot must be activated.\n");
+            break;
+        case (1006):
+            throw std::runtime_error("1006: Homing must be done.\n");
+            break;
+        case (1007):
+            throw std::runtime_error("1007: Joint over limit: the robot cannot reach the joint set or pose requested because of its joint limits.\n");
+            break;
+        case (1011):
+            throw std::runtime_error("1011: The robot is in error mode and cannot process other commands until s resetError command is send.\n");
+            break;
+        case (1012):
+            throw std::runtime_error("1012: Singularity detected.\n");
             break;
         case (1013):
             throw std::runtime_error("1013: Activation failed. Try again\n");
             break;
         case (1014):
-            throw std::runtime_error("Homing procedure failed.Try again.\n");
+            throw std::runtime_error("1014: Homing procedure failed.Try again.\n");
+            break;
+        case (1016):
+            throw std::runtime_error("1016: Pose out of reach.\n");
+            break;
+        case (1017):
+            throw std::runtime_error("1017: Communication failed.\n");
+            break;
+        case (1021):
+            throw std::runtime_error("1021: Deactivation failed. Something is wrong. Try again.\n");
+            break;
+        case (1025):
+            throw std::runtime_error("1025: Impossible to reset the error.\n");
+            break;
+        case (1027):
+            throw std::runtime_error("1027: Simulation mode can only be enabled/disabled while the robot is deactivated.\n");
+            break;
+        default:
+            throw std::runtime_error("Default error\n");
             break;
         }
         master->mutex_up();

@@ -225,6 +225,33 @@ src/Meca500.cpp.s:
 	cd /home/asusrobot/Documents/Federico-De_Simone && $(MAKE) -f sun_slave/CMakeFiles/sun_slave.dir/build.make sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.s
 .PHONY : src/Meca500.cpp.s
 
+src/Meca500_versione1.o: src/Meca500_versione1.cpp.o
+
+.PHONY : src/Meca500_versione1.o
+
+# target to build an object file
+src/Meca500_versione1.cpp.o:
+	cd /home/asusrobot/Documents/Federico-De_Simone && $(MAKE) -f sun_slave/CMakeFiles/sun_slave.dir/build.make sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o
+.PHONY : src/Meca500_versione1.cpp.o
+
+src/Meca500_versione1.i: src/Meca500_versione1.cpp.i
+
+.PHONY : src/Meca500_versione1.i
+
+# target to preprocess a source file
+src/Meca500_versione1.cpp.i:
+	cd /home/asusrobot/Documents/Federico-De_Simone && $(MAKE) -f sun_slave/CMakeFiles/sun_slave.dir/build.make sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.i
+.PHONY : src/Meca500_versione1.cpp.i
+
+src/Meca500_versione1.s: src/Meca500_versione1.cpp.s
+
+.PHONY : src/Meca500_versione1.s
+
+# target to generate assembly for a file
+src/Meca500_versione1.cpp.s:
+	cd /home/asusrobot/Documents/Federico-De_Simone && $(MAKE) -f sun_slave/CMakeFiles/sun_slave.dir/build.make sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.s
+.PHONY : src/Meca500_versione1.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -244,6 +271,9 @@ help:
 	@echo "... src/Meca500.o"
 	@echo "... src/Meca500.i"
 	@echo "... src/Meca500.s"
+	@echo "... src/Meca500_versione1.o"
+	@echo "... src/Meca500_versione1.i"
+	@echo "... src/Meca500_versione1.s"
 .PHONY : help
 
 

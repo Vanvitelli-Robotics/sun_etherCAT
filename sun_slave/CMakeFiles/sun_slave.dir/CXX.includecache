@@ -20,6 +20,16 @@ cstddef
 stdexcept
 -
 
+/home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500_versione1.cpp
+Meca500_versione1.h
+/home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500_versione1.h
+cstring
+-
+cstddef
+-
+stdexcept
+-
+
 SOEM/osal/linux/osal_defs.h
 pthread.h
 -
@@ -121,6 +131,14 @@ Master.h
 sun_slave/include/Master.h
 
 sun_slave/include/Meca500.h
+Master.h
+sun_slave/include/Master.h
+vector
+-
+cstring
+-
+
+sun_slave/include/Meca500_versione1.h
 Master.h
 sun_slave/include/Master.h
 vector

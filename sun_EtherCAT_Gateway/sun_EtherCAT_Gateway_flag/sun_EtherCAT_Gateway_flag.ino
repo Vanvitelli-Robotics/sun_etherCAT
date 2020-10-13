@@ -19,6 +19,7 @@
 #define ESC_ESC 0xDD //      "
 #define HEADER 0x1234
 #define BUFFER_SIZE 36
+#define DIM 50
 
 EasyCAT EASYCAT; // EasyCAT istantiation
 
@@ -70,8 +71,8 @@ unsigned long diff_time = 0;
 unsigned long time1 = 0;
 unsigned long diff = 0;
 int UDP_data = -1;
-unsigned long time_array[5000];
-unsigned long time_correct_packet[5000];
+unsigned long time_array[DIM];
+unsigned long time_correct_packet[DIM];
 int iteration;
 int i=0;
 
@@ -213,7 +214,8 @@ void loop()
         //time_out<100
         if (command_prev == 2) //start streaming real time communication
         {
-            while (true)
+          int y=0;
+            while (y<DIM)
             {
                 time1 = micros();
                 thisPacketIsNotEmpty = (Udp.parsePacket() > 0);
@@ -228,10 +230,11 @@ void loop()
                     previousPacketIsLoaded = false;
                     break;
                 }
+                y++;
             }
             diff = micros() - time1;
 
-            if (i < 5000)
+            if (i < DIM)
             {
                 time_array[i] = diff;
                 i++;
@@ -256,7 +259,7 @@ void loop()
                         actual_time = millis();
                         diff_time = actual_time - last_time;
                         last_time = actual_time;
-                        if (iteration < 5000)
+                        if (iteration < DIM)
                         {
                             time_correct_packet[iteration] = diff_time;
                             iteration++;

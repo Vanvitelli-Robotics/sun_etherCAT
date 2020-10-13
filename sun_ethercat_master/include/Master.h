@@ -34,6 +34,8 @@ namespace sun
         bool shutdown = true;
         int64 toff;
         //int64 gldelta;
+
+        int i=0;
         long int time1;
         long int time2;
         std::array<long int,50000> timecycle;

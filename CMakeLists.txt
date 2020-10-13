@@ -11,11 +11,11 @@ add_subdirectory(SOEM)
 add_subdirectory(sun_scheduling)
 add_subdirectory(sun_slave)
 #add_subdirectory(sottotest)
-add_executable(main_master0 src/main_master0.cpp)
+add_executable(main_master src/main_master.cpp)
 
 
-target_link_libraries(main_master0 sun_ethercat_master)
-target_link_libraries(main_master0 sun_slave)
+target_link_libraries(main_master sun_ethercat_master)
+target_link_libraries(main_master sun_slave)
 
 
 

@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/ATINano43.cpp" "/home/asusrobot/Documents/Federico-De_Simone/sun_slave/CMakeFiles/sun_slave.dir/src/ATINano43.cpp.o"
   "/home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500.cpp" "/home/asusrobot/Documents/Federico-De_Simone/sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o"
+  "/home/asusrobot/Documents/Federico-De_Simone/sun_slave/src/Meca500_versione1.cpp" "/home/asusrobot/Documents/Federico-De_Simone/sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

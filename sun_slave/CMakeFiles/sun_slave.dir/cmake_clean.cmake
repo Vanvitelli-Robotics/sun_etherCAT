@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/sun_slave.dir/src/ATINano43.cpp.o"
   "CMakeFiles/sun_slave.dir/src/Meca500.cpp.o"
+  "CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o"
   "libsun_slave.pdb"
   "libsun_slave.a"
 )

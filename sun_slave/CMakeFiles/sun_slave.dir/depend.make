@@ -39,3 +39,22 @@ sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o: sun_ethercat_master/includ
 sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o: sun_scheduling/include/scheduling.h
 sun_slave/CMakeFiles/sun_slave.dir/src/Meca500.cpp.o: sun_slave/include/Meca500.h
 
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: sun_slave/src/Meca500_versione1.cpp
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/osal/linux/osal_defs.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/osal/osal.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/oshw/linux/nicdrv.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercat.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatbase.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatcoe.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatconfig.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatdc.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercateoe.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatfoe.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatmain.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatprint.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercatsoe.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: SOEM/soem/ethercattype.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: sun_ethercat_master/include/Master.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: sun_scheduling/include/scheduling.h
+sun_slave/CMakeFiles/sun_slave.dir/src/Meca500_versione1.cpp.o: sun_slave/include/Meca500_versione1.h
+
