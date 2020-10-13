@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsun_controller.a  CMakeFiles/sun_controller.dir/src/Controller.cpp.o
+/usr/bin/ranlib libsun_controller.a

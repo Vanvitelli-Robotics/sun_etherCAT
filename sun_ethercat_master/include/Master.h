@@ -33,8 +33,6 @@ namespace sun
         bool thread = false;
         bool shutdown = true;
         int64 toff;
-        //int64 gldelta;
-
         int i=0;
         long int time1;
         long int time2;

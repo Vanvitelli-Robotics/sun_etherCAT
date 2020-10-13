@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
                         bool as, hs, sm, es, pm, eob, eom;
                         float joint_angles[6];
                         float joints[6] = {0, 0, 0, 0, 90, 0};
-                        float omega[6] = {0, 0, 0, 0, 0, -30};
+                        float omega[6] = {0, 0, 0, 0, 0, 30};
                         int activateRob, deactivateRob, homeRob;
 
                         sleep(5);
