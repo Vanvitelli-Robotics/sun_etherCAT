@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         {
             long time_new_packet[500];
             Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
-            ATINano43 forceSensor(1, &master, 1000000);
+            //ATINano43 forceSensor(1, &master, 1000000);
             Meca500 meca500(1, &master);
 
             master.setupSlave(meca500.getPosition(), Meca500::setup_static);
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
                         bool as, hs, sm, es, pm, eob, eom;
                         float joint_angles[6];
                         float joints[6] = {0, 0, 0, 0, 90, 0};
-                        float omega[6] = {0, 0, 0, 0, 0, 30};
+                        float omega[6] = {0, 0, 0, 0, 0, -30};
                         int activateRob, deactivateRob, homeRob;
 
                         sleep(5);
@@ -95,12 +95,12 @@ int main(int argc, char *argv[])
                                 {
                                     sleep(2);
 
-                                    //meca500.moveJoints(joints);
-                                    meca500.SetVelTimeout(0.005);
+                                    //meca500.SetVelTimeout(0.005);
 
-                                    sleep(2);
+                                    //sleep(2);
 
-                                    meca500.moveJointsVel(omega);
+                                    //meca500.moveJointsVel(omega);
+                                    meca500.moveJoints(joints, 1);
 
                                     sleep(2);
 
@@ -140,13 +140,13 @@ int main(int argc, char *argv[])
                             std::cout << "ERROR_Activate.\n";
                         }
 
-                        sleep(2);
+                        master.stampa();
 
-                        meca500.getStatusRobot(as, hs, sm, es, pm, eob, eom);
-                        printf("\nActivate: %d\n", as);
-                        printf("Homed: %d\n", hs);
-                        printf("Sim: %d\n", sm);
-                        printf("Error: %d\n", es);
+                        // meca500.getStatusRobot(as, hs, sm, es, pm, eob, eom);
+                        // printf("\nActivate: %d\n", as);
+                        // printf("Homed: %d\n", hs);
+                        // printf("Sim: %d\n", sm);
+                        // printf("Error: %d\n", es);
 
                         //ATINANO43_CODE
                         /*forceSensor.start_realtime();
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
                     try
                     {
                         master.close_master();
-                        master.stampa();
+                        
                     }
                     catch (const std::runtime_error &e)
                     {

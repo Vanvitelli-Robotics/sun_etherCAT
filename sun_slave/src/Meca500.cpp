@@ -120,7 +120,7 @@ namespace sun
         retval = ec_SDOwrite(slave, RXPDO_number.index, RXPDO_number.sub_index,
                              FALSE, RXPDO_number.size, &(RXPDO_number.value), EC_TIMEOUTSAFE);
         printf("esito_numero=%d\n", retval);
-        ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
+        //ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
 
         return 0;
     }

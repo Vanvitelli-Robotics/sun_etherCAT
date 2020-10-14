@@ -9,8 +9,7 @@ namespace sun
     private:
         Meca500 *meca500;
         float gain;
-        float *y_d;
-        int iteration;
+        float y_d; //desired position
         std::thread thread_controller;
 
     public:
@@ -27,7 +26,7 @@ namespace sun
         /**
          * Create thread
         */
-        void startThread(float *y_d, int dim);
+        void startThread(float y_d);
 
         /**
          * 
