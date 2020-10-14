@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
             long time_new_packet[500];
             Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
             Meca500 meca500(1, &master);
-            Controller controller(&meca500, 0.5);
+            Controller controller(&meca500, 0.7);
 
             master.setupSlave(meca500.getPosition(), Meca500::setup_static);
 
@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
                         printf("Sim: %d\n", sm);
                         printf("Error: %d\n", es);
 
+                        meca500.getError();
                         meca500.resetError();
                         sleep(2);
 

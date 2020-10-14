@@ -56,7 +56,7 @@ namespace sun
             omega[5] = error * gain;
             meca500->moveJointsVel(omega);
 
-            if (error < 0.01 && error > -0.01)
+            if (error < 0.001 && error > -0.001)
                 count++;
             else
                 count = 0;
@@ -69,11 +69,12 @@ namespace sun
         {
             if (i > 500000)
                 i = 500000;
-            oFile_p << "Y_d: " << y_d << "\n";
+            oFile_p << y_d << "\t";
+            oFile_p << 0 << "\n";
             for (int y = 0; y < i; y++)
             {
                 oFile_p << data_position_joint[y] << "\t";
-                oFile_p << time_x[y] << "\n";
+                oFile_p << time_x[y] - time_x[0] << "\n";
             }
             oFile_p.close();
         }
@@ -81,6 +82,8 @@ namespace sun
         std::ofstream oFile_e("Data_error.txt", std::ios_base::out | std::ios_base::trunc);
         if (oFile_e.is_open())
         {
+            if (i > 500000)
+                i = 500000;
             for (int y = 0; y < i; y++)
             {
                 oFile_e << data_error[y] << "\t";
