@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "Master.h"
 //#include "Meca500.h"
@@ -7,6 +6,7 @@
 #include <stdexcept>
 #include <chrono>
 #include <fstream>
+#include <cmath>
 
 using namespace sun;
 typedef int (Meca500::*meca_fun_ptr)(uint16);
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
             long time_new_packet[500];
             Master master(ifname, FALSE, EC_TIMEOUT_TO_SAFE_OP);
             Meca500 meca500(1, &master);
-            Controller controller(&meca500, 0.7);
+            Controller controller(&meca500, 0.5);
 
             master.setupSlave(meca500.getPosition(), Meca500::setup_static);
 
@@ -43,8 +43,10 @@ int main(int argc, char *argv[])
                 try
                 {
                     master.movetoState(meca500.getPosition(), EC_STATE_OPERATIONAL, EC_TIMEOUT_TO_SAFE_OP);
+
                     try
                     {
+
                         //MECA500_CODE
 
                         bool as, hs, sm, es, pm, eob, eom;
@@ -52,6 +54,20 @@ int main(int argc, char *argv[])
                         float joints[6] = {0, 0, 0, 0, 90, 0};
                         float omega[6] = {0, 0, 0, 0, 0, -30};
                         int activateRob, deactivateRob, homeRob;
+
+                        // //parameters for control
+                        // float theta_0, theta_f = 0;
+
+                        // float tf = 10;
+                        // float Tc = 0.01; //sample time
+
+                        // int dim = tf / Tc;
+                        // float time_array[dim];
+                        // float theta_d[dim];
+                        // float b[6] = {6, -15, 10, 0, 0, 0};
+
+                        // time_array[0] = 0;
+                        // float tau = 0;
 
                         sleep(5);
 
@@ -61,7 +77,7 @@ int main(int argc, char *argv[])
                         printf("Sim: %d\n", sm);
                         printf("Error: %d\n", es);
 
-                        meca500.getError();
+                        sleep(2);
                         meca500.resetError();
                         sleep(2);
 
@@ -92,15 +108,30 @@ int main(int argc, char *argv[])
                                 }
                                 printf("\n\n");
 
+                                // theta_0 = joint_angles[5];
+
+                                // for (int i = 1; i < dim; i++)
+                                // {
+                                //     time_array[i] = time_array[i - 1] + Tc;
+                                //     tau = time_array[i] / tf;
+                                //     theta_d[i] = theta_0 + (theta_f - theta_0) * (b[0] * pow(tau, 5) + b[1] * pow(tau, 4) + b[2] * pow(tau, 3));
+                                //     //std::cout << theta_d[i]<<"\n";
+                                //     //printf("%f\n", theta_d[i]);
+                                // }
                                 sleep(2);
 
                                 if (meca500.setPoint(1) == 0)
                                 {
-                                    controller.startThread(180);
+
+                                    meca500.moveJoints(joints);
+                                    sleep(5);
+
+                                    controller.startThread();
 
                                     controller.waitLoop(); //the user thread waits the end of thread controller.
                                     meca500.setPoint(0);
 
+                                    sleep(2);
                                     meca500.getJoints(joint_angles);
 
                                     for (int i = 0; i < 6; i++)
@@ -146,7 +177,7 @@ int main(int argc, char *argv[])
                         cerr << e.what();
                     }
 
-                    usleep(5000000);
+                    osal_usleep(5000000);
                     try
                     {
                         master.close_master();

@@ -11,6 +11,8 @@ Controller.h
 /home/asusrobot/Documents/Federico-De_Simone/sun_controller/src/Controller.h
 fstream
 -
+cmath
+-
 
 SOEM/osal/linux/osal_defs.h
 pthread.h

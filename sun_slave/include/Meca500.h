@@ -143,7 +143,7 @@ namespace sun
         out_MECA500t *out_MECA500;
         Master *master;
         uint16 position;
-        int64 cycletime;
+        uint32 cycletime;
 
     public:
         /**
@@ -155,9 +155,9 @@ namespace sun
          * Constructor
          * @param Master* m pointer to master
          * @param uint16 position this is the position of the slave in the network
-         * @param int64 cycletime this is the specific time of cycle of each slave. It's set to 1000000 as default value. 
+         * @param uint32 cycletime this is the specific time of cycle of each slave. It's set to 1000000 as default value. 
         */
-        Meca500(uint16 position, Master *m, int64 cycletime = 1000000);
+        Meca500(uint16 position, Master *m, uint32 cycletime = 1000000);
 
         /**
          * Destructor: delete a slave from vector
@@ -172,18 +172,24 @@ namespace sun
 
         /**
          * This method returns the cycletime of the slave.
-         * @return int64 cycletime
+         * @return uint32 cycletime
         */
-        int64 getCycletime();
+        uint32 getCycletime();
 
         /**
-         * This method stes the cycletime of the slave.
-         * @param int64 cycletime
+         * 
         */
-        void setCycletime(int64 cycletime);
+       void getJointsVelocities(float *joint_velocities);
+     
 
         /**
-         * This method setups the slave.
+         * This method sets the cycletime of the slave.
+         * @param uint32 cycletime
+        */
+        void setCycletime(uint32 cycletime);
+
+        /**
+         * This method sets up the slave.
          * @param uint16 position this is the position of the slave in the network
          * @return int 0 as positive  
         */

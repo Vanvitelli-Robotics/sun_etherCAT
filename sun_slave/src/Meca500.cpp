@@ -13,7 +13,7 @@ namespace sun
 {
     std::vector<Meca500 *> Meca500::meca_vector;
 
-    Meca500::Meca500(uint16 p, Master *m, int64 cycletime)
+    Meca500::Meca500(uint16 p, Master *m, uint32 cycletime)
     {
         master = m;
         position = p;
@@ -39,12 +39,12 @@ namespace sun
         return position;
     }
 
-    int64 Meca500::getCycletime()
+    uint32 Meca500::getCycletime()
     {
         return this->cycletime;
     }
 
-    void Meca500::setCycletime(int64 cycletime)
+    void Meca500::setCycletime(uint32 cycletime)
     {
         this->cycletime = cycletime;
     }
@@ -120,7 +120,7 @@ namespace sun
         retval = ec_SDOwrite(slave, RXPDO_number.index, RXPDO_number.sub_index,
                              FALSE, RXPDO_number.size, &(RXPDO_number.value), EC_TIMEOUTSAFE);
         printf("esito_numero=%d\n", retval);
-        //ec_dcsync0(slave, TRUE, cycletime, cycletime / 2);
+        //ec_dcsync0(slave, TRUE, cycletime, cycletime/2);
 
         return 0;
     }
@@ -141,6 +141,18 @@ namespace sun
     {
         in_MECA500 = (in_MECA500t *)master->getOutput_slave(position);
         out_MECA500 = (out_MECA500t *)master->getInput_slave(position);
+    }
+
+    void Meca500::getJointsVelocities(float *joint_velocities)
+    {
+        master->mutex_down();
+        joint_velocities[0] = out_MECA500->angular_velocities.joint_speed_1;
+        joint_velocities[1] = out_MECA500->angular_velocities.joint_speed_2;
+        joint_velocities[2] = out_MECA500->angular_velocities.joint_speed_3;
+        joint_velocities[3] = out_MECA500->angular_velocities.joint_speed_4;
+        joint_velocities[4] = out_MECA500->angular_velocities.joint_speed_5;
+        joint_velocities[5] = out_MECA500->angular_velocities.joint_speed_6;
+        master->mutex_up();
     }
 
     /*
