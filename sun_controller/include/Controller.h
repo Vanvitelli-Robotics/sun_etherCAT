@@ -34,5 +34,7 @@ namespace sun
        void position_loop_control();
 
        void waitLoop();
+
+       void start_force_control();
     };
 } // namespace sun

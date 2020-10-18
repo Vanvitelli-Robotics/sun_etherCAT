@@ -177,7 +177,8 @@ namespace sun
         uint32 getCycletime();
 
         /**
-         * 
+         * This methods returns the measured velocities of joints throw a float array.
+         * @param float *joint_velocities: array contains the measured velocities.
         */
        void getJointsVelocities(float *joint_velocities);
      
@@ -409,6 +410,26 @@ namespace sun
          * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
         */
         void moveLinRelWRF(float *pose, uint16 moveID = 0);
+
+        /**
+         * This command makes the robot move its TRF with the specified instantaneous Cartesian velocity, defined with respect to the TRF.
+         * @param float pose[0], pose[1], pose[2] are respectively x_p,y_p,z_p, the components of the instantaneous linear velocity of the TCP w.r.t. the TRF, in mm/s, ranging
+         * from -1000 mm/s to 1000 mm/s.
+         * @param float pose[3], pose[4], pose[5] are respectively w_x, w_y, w_z, the components of the instantaneous angular velocity of the TRF w.r.t. the TRF, in °/s,
+         * ranging from -300°/s to300°/s.
+         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        */
+       void moveLinVelTRF(float *pose, uint16 moveID = 0); 
+
+       /**
+         * This command makes the robot move its TRF with the specified instantaneous Cartesian velocity, defined with respect to the WRF.
+         * @param float pose[0], pose[1], pose[2] are respectively x_p,y_p,z_p, the components of the instantaneous linear velocity of the TCP w.r.t. the WRF, in mm/s, ranging
+         * from -1000 mm/s to 1000 mm/s.
+         * @param float pose[3], pose[4], pose[5] are respectively w_x, w_y, w_z, the components of the instantaneous angular velocity of the TRF w.r.t. the WRF, in °/s,
+         * ranging from -300°/s to300°/s.
+         * @param uint16 moveID = 0 (default) -> the robot works in a cyclic mode; moveID !=0 -> the robot works in one-off mode.
+        */
+       void moveLinVelWRF(float *pose, uint16 moveID = 0);
 
         /**
          * This command makes the robot move its TRF to a specific pose with respect to the WRF.

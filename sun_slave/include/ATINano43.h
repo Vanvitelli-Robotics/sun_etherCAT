@@ -79,25 +79,32 @@ namespace sun
             void stop();
 
             /**
-             * Receive forces array
+             * Receive forces array.
+             * @param double *forces: array contains measured forces.
             */
             void getForces(double *forces);
 
             /**
-             * Receive torques array
+             * Receive torques array.
+             * @param double *torques: array contains measured torques.
             */
             void getTorques(double *torques);
 
             /**
              * Receive status array
+             * @param uint32 *status: array contains info about the status.
             */
             void getStatus(uint32 *status);
 
             /**
-             * Assign pointer to struct
+             * This method must be used to assign a pointer to a struct. It must be called before the first command.
             */
             void assign_pointer_struct();
 
+            /**
+             * This methods returns the position of the slave in the network.
+             * @return uint16 position of slave in the network.
+            */ 
             uint16 getPosition();
         };
 

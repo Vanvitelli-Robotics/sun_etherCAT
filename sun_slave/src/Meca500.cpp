@@ -154,6 +154,7 @@ namespace sun
         joint_velocities[5] = out_MECA500->angular_velocities.joint_speed_6;
         master->mutex_up();
     }
+    
 
     /*
     *                               Request commands
@@ -599,6 +600,8 @@ namespace sun
         master->mutex_up();
     }
 
+    
+
     int Meca500::setBlending(float p, uint16 moveID)
     {
         setMoveID(moveID);
@@ -764,6 +767,36 @@ namespace sun
         in_MECA500->movement.variables.varf[3] = omega[3];
         in_MECA500->movement.variables.varf[4] = omega[4];
         in_MECA500->movement.variables.varf[5] = omega[5];
+        master->mutex_up();
+    }
+
+    void Meca500::moveLinVelWRF(float *pose, uint16 moveID)
+    {
+        setMoveID(moveID);
+
+        master->mutex_down();
+        in_MECA500->movement.motion_command = 22;
+        in_MECA500->movement.variables.varf[0] = pose[0];
+        in_MECA500->movement.variables.varf[1] = pose[1];
+        in_MECA500->movement.variables.varf[2] = pose[2];
+        in_MECA500->movement.variables.varf[3] = pose[3];
+        in_MECA500->movement.variables.varf[4] = pose[4];
+        in_MECA500->movement.variables.varf[5] = pose[5];
+        master->mutex_up();
+    }
+
+    void Meca500::moveLinVelTRF(float *pose, uint16 moveID)
+    {
+        setMoveID(moveID);
+
+        master->mutex_down();
+        in_MECA500->movement.motion_command = 23;
+        in_MECA500->movement.variables.varf[0] = pose[0];
+        in_MECA500->movement.variables.varf[1] = pose[1];
+        in_MECA500->movement.variables.varf[2] = pose[2];
+        in_MECA500->movement.variables.varf[3] = pose[3];
+        in_MECA500->movement.variables.varf[4] = pose[4];
+        in_MECA500->movement.variables.varf[5] = pose[5];
         master->mutex_up();
     }
 
